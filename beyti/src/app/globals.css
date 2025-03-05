@@ -20,7 +20,7 @@
     --primary-foreground: 0 0% 100%; /* White Text on Primary */
 
     /* Secondary & Muted Colors */
-    --secondary: 210 40% 96.1%;
+    --secondary: 166 , 100% , 30%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
