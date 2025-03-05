@@ -117,3 +117,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.enlarge {
+  transform: scale(1.1);
+  transform-origin: center;
+}
+
