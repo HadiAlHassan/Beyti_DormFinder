@@ -5,7 +5,7 @@ import InfoSection from "@/components/AboutUs/InfoPart";
 
 export default function aboutus() {
   return (
-    <div className="h-screen flex flex-col w-full">
+    <div className="flex flex-col w-full">
       <div className="h-1/2 flex">
         <div className="basis-1/3">
           <ImagePreview src="/AboutUsPreview.png" />

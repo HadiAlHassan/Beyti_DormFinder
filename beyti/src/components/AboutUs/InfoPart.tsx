@@ -7,9 +7,13 @@ const InfoSection = () => {
         Flexibility and options to suit your lifestyle.
       </h1>
       <p className="text-gray-600">
-        Here we can write a brief about combinatorial solutions, our hard time
-        looking for roommates, and our hope to help our beloved university and
-        the newcomers to have a great peaceful life.
+      At Combinatorial Solutions, we understand the challenges students face when searching for the perfect place to live. Finding a suitable dorm, securing compatible roommates, and ensuring a smooth transition to university life can be overwhelming.
+      <br /><br />
+      As former students who have experienced these struggles firsthand, we created Beyti—a platform designed to simplify dorm selection and roommate matching. Our mission is to provide affordable, convenient, and student-friendly housing solutions, ensuring every student finds a comfortable and secure living space.
+      <br /><br />
+      With a deep commitment to our university community, we strive to support both incoming and current students in making informed housing decisions. By combining technology with real-world experience, we aim to foster a harmonious and stress-free living environment, helping students focus on what truly matters—their education and personal growth.
+      <br /><br />
+      Join us in making student life easier, one dorm at a time.
       </p>
       <Button className="bg-green-700 hover:bg-green-800 text-white">
         Search Dorms
