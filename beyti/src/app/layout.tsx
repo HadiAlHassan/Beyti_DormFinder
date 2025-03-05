@@ -38,7 +38,7 @@ export default function RootLayout({
 
             {/* Nav Bar */}
             
-            <nav className="sticky top-0 left-0 w-full z-50 bg-black bg-opacity-70 shadow-md py-4">
+            <nav className="w-full z-50 bg-black bg-opacity-70 shadow-md py-4">
               <div className="container mx-auto flex justify-between items-center px-6">
                 <Link href="/" className="text-2xl font-bold text-green-600">
                  <Image src="/logo/BeytiWhiteFlat.png" width={150} height={10} alt="Beyti Logo"></Image>
@@ -57,8 +57,8 @@ export default function RootLayout({
                     Contact
                   </Link>
                 </div>
-                <Link href="/login" className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary">
-                  Login / Sign up
+                <Link href="/login/user-login" className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary">
+                  Login
                 </Link>
               </div>
             </nav>
@@ -74,8 +74,6 @@ export default function RootLayout({
           </footer>
           </div>
 
-
-          
         </ThemeProvider>
       </body>
     </html>
