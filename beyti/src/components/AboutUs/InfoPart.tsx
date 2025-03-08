@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 const InfoSection = () => {
   return (
     <div className=" space-y-4 p-16 pl-24">
-      <h1 className="text-5xl font-bold ">
+      <h1 className="text-5xl font-bold  text-emerald-800">
         Flexibility and options to suit your lifestyle.
       </h1>
       <p className="text-gray-600">
@@ -15,7 +15,7 @@ const InfoSection = () => {
       <br /><br />
       Join us in making student life easier, one dorm at a time.
       </p>
-      <Button className="bg-green-700 hover:bg-green-800 text-white">
+      <Button className="bg-emerald-700 hover:bg-emerald-800 text-white">
         Search Dorms
       </Button>
     </div>
