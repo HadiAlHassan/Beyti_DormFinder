@@ -21,10 +21,16 @@ import {
   AlertDialogDescription,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import signUp from "@/utils/SignUpAPI";
 
+// Main MultiStepForm component
 const MultiStepForm = () => {
+  // Step indicator and alert state
   const [step, setStep] = useState(1);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
 
+  // Arrays for months, dates, and years for date selection
   const months = [
     { value: "jan", label: "January" },
     { value: "feb", label: "February" },
@@ -50,10 +56,7 @@ const MultiStepForm = () => {
     return { value: year.toString(), label: year.toString() };
   });
 
-  const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
-
-  // Basic Info (Step 1)
+  // ----- Step 1: Basic Info -----
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -64,7 +67,7 @@ const MultiStepForm = () => {
   const [dobYear, setDobYear] = useState("");
   const [gender, setGender] = useState("female");
 
-  // Additional Info (Step 2)
+  // ----- Step 2: Additional Info -----
   const [picture, setPicture] = useState<File | null>(null);
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -76,15 +79,69 @@ const MultiStepForm = () => {
   const [uniFinishDate, setUniFinishDate] = useState("");
   const [uniFinishYear, setUniFinishYear] = useState("");
 
-  // Login Info (Step 3)
+  // ----- Step 3: Login Info -----
   const [email, setEmail] = useState("");
   const [lauId, setLauId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [securityQuestion, setSecurityQuestion] = useState("");
-  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [security_question, setsecurity_question] = useState("");
+  const [security_answer, setsecurity_answer] = useState("");
 
-  // Unified validation function for each step
+  // Helper function: converts month abbreviation to numeric format (e.g., "jan" -> "01")
+  const monthToNumber = (month: string): string => {
+    const mapping: { [key: string]: string } = {
+      jan: "01",
+      feb: "02",
+      mar: "03",
+      apr: "04",
+      may: "05",
+      jun: "06",
+      jul: "07",
+      aug: "08",
+      sep: "09",
+      oct: "10",
+      nov: "11",
+      dec: "12",
+    };
+    return mapping[month.toLowerCase()] || "00";
+  };
+
+
+  const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
+        setError("Picture file size must be less than 3MB.");
+        setOpen(true);
+        return;
+      }
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setError("Picture must be an image or a PDF.");
+        setOpen(true);
+        return;
+      }
+      setPicture(file);
+    }
+  };
+
+  const handleIdDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
+        setError("ID document file size must be less than 3MB.");
+        setOpen(true);
+        return;
+      }
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setError("ID document must be an image or a PDF.");
+        setOpen(true);
+        return;
+      }
+      setIdDocument(file);
+    }
+  };
+
+  // Handle next button click with validations
   const handleNext = () => {
     if (step === 1) {
       if (!firstName.trim()) {
@@ -129,6 +186,12 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
+      if(isNaN(Number(phoneNumber))){
+        setError("The entered value for Phone Number should only be a Number.");
+        setOpen(true);
+        return;
+      }
+      
       if (!uniStartMonth || !uniStartDate || !uniStartYear) {
         setError("Please select your university start date.");
         setOpen(true);
@@ -151,11 +214,30 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
+      if(isNaN(Number(lauId))){
+        setError("The entered value for LAU ID should only be a Number.");
+        setOpen(true);
+        return;
+      }
       if (!password) {
         setError("Please enter your password.");
         setOpen(true);
         return;
       }
+      if (password.length<8) {
+        setError("The password must be at least 8 characters in length.");
+        setOpen(true);
+        return;
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+
+      if (!passwordRegex.test(password)) {
+        setError("Password must include at least 1 uppercase letter, 1 lowercase letter, and 1 special character.");
+        setOpen(true);
+        return;
+      }
+
       if (!confirmPassword) {
         setError("Please confirm your password.");
         setOpen(true);
@@ -166,11 +248,69 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
-      console.log("All validations passed. Form is ready for submission.");
+
+      const trimmedQuestion = security_question.trim();
+      const trimmedAnswer = security_answer.trim();
+
+      if (trimmedQuestion && !trimmedAnswer) {
+        setError("Please provide a security answer since you entered a security question.");
+        setOpen(true);
+        return;
+      }
+
+      if (trimmedAnswer && !trimmedQuestion) {
+        setError("Please provide a security question since you entered a security answer.");
+        setOpen(true);
+        return;
+      }
+      
+      // All validations passed; submit the form
+      handleSubmit();
     }
   };
 
+  // Handle back button
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  // Submit the form data via the API
+  const handleSubmit = async () => {
+    // Construct ISO date strings from date parts
+    const dob = `${dobYear}-${monthToNumber(dobMonth)}-${dobDate.padStart(2, "0")}`;
+    const uni_start_data = `${uniStartYear}-${monthToNumber(uniStartMonth)}-${uniStartDate.padStart(2, "0")}`;
+    const uni_end_data = `${uniFinishYear}-${monthToNumber(uniFinishMonth)}-${uniFinishDate.padStart(2, "0")}`;
+
+    // Convert phone number and LAU ID to numbers
+    const phoneNum = Number(phoneNumber);
+    const lauIdNum = Number(lauId);
+
+    // Call the signUp API function with all the gathered form data
+    const result = await signUp(
+      firstName,
+      middleName.trim() !== "" ? middleName : null,
+      lastName,
+      nationality,
+      homeAddress,
+      dob,
+      gender,
+      picture,
+      idDocument,
+      phoneNum,
+      emergencyContact.trim() !== "" ? emergencyContact : null,
+      uni_start_data,
+      uni_end_data,
+      email,
+      lauIdNum,
+      password,
+      security_question.trim() !== "" ? security_question : "",
+      security_answer.trim() !== "" ? security_answer : ""
+    );
+
+    // If API returns an error, show alert dialog with error message
+    if (!result.success) {
+      setError(result.message);
+      setOpen(true);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -192,18 +332,12 @@ const MultiStepForm = () => {
             <div key={index} className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                  step === index + 1
-                    ? "bg-emerald-800 text-white"
-                    : "bg-gray-300 text-gray-700"
+                  step === index + 1 ? "bg-emerald-800 text-white" : "bg-gray-300 text-gray-700"
                 }`}
               >
                 {index + 1}
               </div>
-              <span
-                className={`text-sm ${
-                  step === index + 1 ? "text-emerald-800 font-semibold" : "text-gray-400"
-                }`}
-              >
+              <span className={`text-sm ${step === index + 1 ? "text-emerald-800 font-semibold" : "text-gray-400"}`}>
                 {label}
               </span>
             </div>
@@ -214,9 +348,7 @@ const MultiStepForm = () => {
       {step === 1 && (
         <div className="mt-20">
           <h2 className="text-xl font-semibold">Basic Info</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            *All fields required unless noted.
-          </p>
+          <p className="text-sm text-gray-500 mb-4">*All fields required unless noted.</p>
 
           <Label>* First Name</Label>
           <Input
@@ -309,11 +441,7 @@ const MultiStepForm = () => {
           </div>
 
           <Label>* What's your gender?</Label>
-          <RadioGroup
-            value={gender}
-            onValueChange={(value) => setGender(value)}
-            className="flex space-x-4 mb-4 mt-2"
-          >
+          <RadioGroup value={gender} onValueChange={(value) => setGender(value)} className="flex space-x-4 mb-4 mt-2">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="female" id="female" />
               <Label htmlFor="female">Female</Label>
@@ -333,26 +461,20 @@ const MultiStepForm = () => {
       {step === 2 && (
         <div className="mt-16">
           <h2 className="text-lg font-semibold">Additional Info</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            *All fields required unless noted.
-          </p>
+          <p className="text-sm text-gray-500 mb-4">*All fields required unless noted.</p>
 
           <Label className="block mb-1">* Upload Picture</Label>
           <Input
             type="file"
             className="mb-6"
-            onChange={(e) =>
-              setPicture(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handlePictureChange}
           />
 
           <Label className="block mb-1">* Upload ID / Passport</Label>
           <Input
             type="file"
             className="mb-6"
-            onChange={(e) =>
-              setIdDocument(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handleIdDocumentChange}
           />
 
           <Label className="block mb-1">* Phone Number</Label>
@@ -370,7 +492,7 @@ const MultiStepForm = () => {
           <Label className="block mb-1">Emergency Contact</Label>
           <Input
             type="tel"
-            placeholder="Enter emergency contact"
+            placeholder="Enter emergency contact( name of the entity and the way to contact it like phone number )"
             value={emergencyContact}
             onChange={(e) => setEmergencyContact(e.target.value)}
             className="mb-6"
@@ -472,16 +594,14 @@ const MultiStepForm = () => {
       )}
 
       {step === 3 && (
-        <div className="mt-16">
+        <div className="mt-16 ">
           <h2 className="text-lg font-semibold">Login Info</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            *All fields required unless noted.
-          </p>
+          <p className="text-sm text-gray-500 mb-4">*All fields required unless noted.</p>
 
           <Label className="block mb-1">* LAU Email</Label>
           <Input
             type="email"
-            placeholder="Enter your email"
+            placeholder="Enter your LAU email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mb-6"
@@ -489,7 +609,7 @@ const MultiStepForm = () => {
 
           <Label className="block mb-1">* LAU ID</Label>
           <Input
-            placeholder="Enter your user ID"
+            placeholder="Enter your LAU ID"
             value={lauId}
             onChange={(e) => {
               const numericValue = e.target.value.replace(/\D/g, "");
@@ -518,26 +638,16 @@ const MultiStepForm = () => {
 
           <div className="mb-6">
             <Label className="block mb-1">Security Question</Label>
-            <Select onValueChange={(value) => setSecurityQuestion(value)}>
+            <Select onValueChange={(value) => setsecurity_question(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a security question" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pet">
-                  What was your first pet's name?
-                </SelectItem>
-                <SelectItem value="school">
-                  What was the name of your first school?
-                </SelectItem>
-                <SelectItem value="city">
-                  What city was your father born in?
-                </SelectItem>
-                <SelectItem value="teacher">
-                  What was the name of your first teacher?
-                </SelectItem>
-                <SelectItem value="babysitter">
-                  What was the name of your childhood babysitter?
-                </SelectItem>
+                <SelectItem value="pet">What was your first pet's name?</SelectItem>
+                <SelectItem value="school">What was the name of your first school?</SelectItem>
+                <SelectItem value="city">What city was your father born in?</SelectItem>
+                <SelectItem value="teacher">What was the name of your first teacher?</SelectItem>
+                <SelectItem value="babysitter">What was the name of your childhood babysitter?</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -545,8 +655,8 @@ const MultiStepForm = () => {
           <Label className="block mb-1">Answer</Label>
           <Input
             placeholder="Enter your answer"
-            value={securityAnswer}
-            onChange={(e) => setSecurityAnswer(e.target.value)}
+            value={security_answer}
+            onChange={(e) => setsecurity_answer(e.target.value)}
             className="mb-6"
           />
 
