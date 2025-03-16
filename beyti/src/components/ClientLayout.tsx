@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar/app-sidebar";
+import StudentLayout from "./StudentLayout/StudentLayout";
 
 export default function ClientLayout({
   children,
@@ -13,6 +14,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isStudentPage = pathname.startsWith("/student");
   const hideHeaderFooter =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isHomePage = pathname === "/";
@@ -25,21 +27,25 @@ export default function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      {hideHeaderFooter ? (
+      {/* 🔹 Handle Student Pages */}
+      {isStudentPage ? (
+        <StudentLayout>{children}</StudentLayout>
+      ) : hideHeaderFooter ? (
+        /* 🔹 Login/Signup Pages (No Header/Footer) */
         <main className="flex flex-col min-h-screen">{children}</main>
       ) : showSidebar ? (
+        /* 🔹 Landlord Pages (With Sidebar) */
         <SidebarProvider>
           <div className="flex">
-            {/* Sidebar Section */}
             <AppSidebar />
-
             <main className="flex-grow">
-            <SidebarTrigger />
+              <SidebarTrigger />
               {children}
             </main>
           </div>
         </SidebarProvider>
       ) : (
+        /* 🔹 Default Layout (Regular Pages) */
         <div
           className="min-h-screen flex flex-col"
           style={
@@ -96,10 +102,10 @@ export default function ClientLayout({
             </div>
           </nav>
 
-          {/* 🔹 Page Content - Make it take remaining space */}
+          {/* 🔹 Page Content */}
           <main className="flex-grow">{children}</main>
 
-          {/* 🔹 Footer - Always at the bottom */}
+          {/* 🔹 Footer */}
           <footer className="bg-black bg-opacity-70 py-6 text-center mt-auto">
             <p className="text-white">
               © 2025 CombinatorialSolutions. All rights reserved.
