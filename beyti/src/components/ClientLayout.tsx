@@ -4,9 +4,8 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/Sidebar/app-sidebar";
 import StudentLayout from "./StudentLayout/StudentLayout";
+import LandLordLayout from "./LandLordLayout/LandLordLayout";
 
 export default function ClientLayout({
   children,
@@ -15,10 +14,10 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const isStudentPage = pathname.startsWith("/student");
+  const isLandlordPage = pathname.startsWith("/landlord");
   const hideHeaderFooter =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isHomePage = pathname === "/";
-  const showSidebar = pathname.startsWith("/landlord");
 
   return (
     <ThemeProvider
@@ -27,25 +26,13 @@ export default function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      {/* 🔹 Handle Student Pages */}
       {isStudentPage ? (
         <StudentLayout>{children}</StudentLayout>
+      ) : isLandlordPage ? (
+        <LandLordLayout>{children}</LandLordLayout>
       ) : hideHeaderFooter ? (
-        /* 🔹 Login/Signup Pages (No Header/Footer) */
         <main className="flex flex-col min-h-screen">{children}</main>
-      ) : showSidebar ? (
-        /* 🔹 Landlord Pages (With Sidebar) */
-        <SidebarProvider>
-          <div className="flex">
-            <AppSidebar />
-            <main className="flex-grow">
-              <SidebarTrigger />
-              {children}
-            </main>
-          </div>
-        </SidebarProvider>
       ) : (
-        /* 🔹 Default Layout (Regular Pages) */
         <div
           className="min-h-screen flex flex-col"
           style={

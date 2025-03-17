@@ -9,9 +9,9 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { Home, Book, User, LogOut, Search } from "lucide-react"; // Icons
+import { Home, Building, ClipboardList, User, LogOut } from "lucide-react"; // Icons
 
-export default function StudentLayout({
+export default function LandLordLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -22,34 +22,34 @@ export default function StudentLayout({
         {/* 🔹 Sidebar Section */}
         <Sidebar className="w-64 shrink-0 border-r border-gray-200">
           <SidebarHeader>
-            <h2 className="text-lg font-semibold">Student Dashboard</h2>
+            <h2 className="text-lg font-semibold">Landlord Dashboard</h2>
           </SidebarHeader>
 
           <SidebarContent>
             <SidebarGroup>
               <Link
-                href="/student/dashboard"
+                href="/landlord/dashboard"
                 className="flex items-center p-3 hover:bg-gray-100"
               >
                 <Home className="mr-2 h-5 w-5" />
                 Dashboard
               </Link>
               <Link
-                href="/student/bookings"
+                href="/landlord/properties"
                 className="flex items-center p-3 hover:bg-gray-100"
               >
-                <Book className="mr-2 h-5 w-5" />
-                My Bookings
+                <Building className="mr-2 h-5 w-5" />
+                My Properties
               </Link>
               <Link
-                href="/student/explore"
+                href="/landlord/bookings"
                 className="flex items-center p-3 hover:bg-gray-100"
               >
-                <Search className="mr-2 h-5 w-5" />
-                Explore Dorms
+                <ClipboardList className="mr-2 h-5 w-5" />
+                Manage Bookings
               </Link>
               <Link
-                href="/student/profile"
+                href="/landlord/profile"
                 className="flex items-center p-3 hover:bg-gray-100"
               >
                 <User className="mr-2 h-5 w-5" />
@@ -70,9 +70,7 @@ export default function StudentLayout({
         </Sidebar>
 
         {/* 🔹 Main Content Section */}
-        <main className="flex-grow w-full p-6 md:p-6">
-          {children}
-        </main>
+        <main className="flex-grow w-full p-6 md:p-6">{children}</main>
       </div>
     </SidebarProvider>
   );
