@@ -1,18 +1,11 @@
 "use client"
 import LoginForm from "@/components/UserAuthForm/LoginForm"
 import Poster from "@/components/Login/Poster"
-import { useEffect } from "react";
-import { getCookie } from "@/utils/cookieUtils";
-import { redirect } from "next/navigation";
+import AuthRedirect from "@/components/AuthRedirect";
 export default function UserLoginPage() {
-  
-  useEffect(() => {
-      const token = getCookie("authToken");
-      if (token) {
-        redirect("/dashboard");
-      }
-    }, []);
+
     return (
+      <AuthRedirect>
       <main className="flex">
         <div className="w-1/2 flex justify-center items-center">
           <LoginForm />
@@ -22,5 +15,6 @@ export default function UserLoginPage() {
           <Poster dynamicText="More than just a dorm - Find your perfect home away from home!" />
         </div>
       </main>
+      </AuthRedirect>
     );
   }

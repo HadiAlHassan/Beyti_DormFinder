@@ -3,7 +3,6 @@ import { setCookie } from "./cookieUtils";
 interface PromiseResponse {
     success: boolean;
     message: string;
-    token?: string;
   }
   
   const signUp = async (
@@ -54,18 +53,18 @@ interface PromiseResponse {
       });
   
       const data = await response.json();
+  
+      if (!response.ok) {
+        return { success: false, message: data.message };
+      }
 
-    if (!response.ok) {
-      return { success: false, message: data.message };
-    }
-
-    if (data.success) {
-      setCookie("authToken", data.jwt, 60);
-      window.location.href = "/landlord";
-    }
-
-    return { message: data.message, success: data.success };
-  } catch (error: any) {
+      if (data.success) {
+      setCookie("authToken", data.jwt, 60, 'student');
+      window.location.href = "/student";
+      }
+  
+      return { message: data.message, success: data.success };
+    } catch (error: any) {
     console.error("Error signing up user:", error);
     return { success: false, message: error.message || "An error occurred while signing up." };
   }

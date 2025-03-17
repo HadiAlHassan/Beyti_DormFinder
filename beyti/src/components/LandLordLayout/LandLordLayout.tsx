@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Home, Building, ClipboardList, User, LogOut } from "lucide-react"; // Icons
+import ProtectedLayout from "../ProtectLayout";
 
 export default function LandLordLayout({
   children,
@@ -17,6 +18,7 @@ export default function LandLordLayout({
   children: React.ReactNode;
 }) {
   return (
+  <ProtectedLayout allowedRole="landlord" redirectTo="/">
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         {/* 🔹 Sidebar Section */}
@@ -73,5 +75,6 @@ export default function LandLordLayout({
         <main className="flex-grow w-full p-6 md:p-6">{children}</main>
       </div>
     </SidebarProvider>
+  </ProtectedLayout>
   );
 }

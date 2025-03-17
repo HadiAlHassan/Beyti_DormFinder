@@ -16,7 +16,7 @@ const logIn = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ LAUEmailOrID, password, rememberMe }),
-      credentials: "include", // If you're using server-set cookies
+      credentials: "include",
     });
 
     const data = await response.json();
@@ -24,7 +24,7 @@ const logIn = async (
 
     if (data.success) {
       const expiryMinutes = rememberMe ? 4320 : 60;
-      setCookie("authToken", data.jwt, expiryMinutes);
+      setCookie("authToken", data.jwt, expiryMinutes, 'student');
       return { success: true, message: "Login successful", token: data.jwt };
     }
 

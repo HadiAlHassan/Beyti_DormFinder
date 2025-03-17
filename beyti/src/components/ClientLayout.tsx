@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
 import StudentLayout from "./StudentLayout/StudentLayout";
 import LandLordLayout from "./LandLordLayout/LandLordLayout";
+import { getCookie } from "@/utils/cookieUtils";
 
 export default function ClientLayout({
   children,
@@ -18,7 +19,8 @@ export default function ClientLayout({
   const hideHeaderFooter =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isHomePage = pathname === "/";
-
+  const { token, role } = getCookie();
+  const dashboardLink = role === "landlord" ? "/landlord/" : "/student/";
   return (
     <ThemeProvider
       attribute="class"
@@ -80,12 +82,21 @@ export default function ClientLayout({
                   Contact
                 </Link>
               </div>
-              <Link
-                href="/login/user-login"
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary"
-              >
-                Login
-              </Link>
+              {token ? (
+                <Link
+                  href={dashboardLink}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary"
+                >
+                  My Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login/user-login"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </nav>
 

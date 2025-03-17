@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Home, Book, User, LogOut, Search } from "lucide-react"; // Icons
+import ProtectedLayout from "../ProtectLayout";
 
 export default function StudentLayout({
   children,
@@ -17,6 +18,7 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   return (
+  <ProtectedLayout allowedRole="student" redirectTo="/">
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         {/* 🔹 Sidebar Section */}
@@ -75,5 +77,6 @@ export default function StudentLayout({
         </main>
       </div>
     </SidebarProvider>
+  </ProtectedLayout>
   );
 }

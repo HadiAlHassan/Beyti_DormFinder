@@ -39,7 +39,7 @@ const LoginForm = () => {
     const response = await logIn(emailOrID, password, rememberMe);
 
     if (response.success) {
-      window.location.href = "/dashboard"; // Redirect on success
+      window.location.href = "/student";
     } else {
       setAlertMessage(response.message);
       setAlertOpen(true);
@@ -132,7 +132,7 @@ const LoginForm = () => {
         </div>
         <div className="mt-4">
           <a href="/signup/user-signup" className="text-sm text-black font-semibold">
-            Don’t have an Account?{" "}x``
+            Don’t have an Account?{" "}
             <span className="text-emerald-800">Create one</span>
           </a>
         </div>
