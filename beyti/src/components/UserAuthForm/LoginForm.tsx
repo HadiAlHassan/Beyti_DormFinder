@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {logIn} from "@/utils/LogInAPI";
 import { Checkbox } from "../ui/checkbox";
 import {
   AlertDialog,
@@ -19,10 +20,11 @@ const LoginForm = () => {
   const [selectedRole, setSelectedRole] = useState("Student");
   const [emailOrID, setEmailOrID] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!emailOrID.trim() || !password.trim()) {
       setAlertMessage("Please fill in all fields.");
       setAlertOpen(true);
@@ -33,8 +35,15 @@ const LoginForm = () => {
       setAlertOpen(true);
       return;
     }
-    // Proceed with login logic
-    console.log("Logging in...", { emailOrID, password });
+
+    const response = await logIn(emailOrID, password, rememberMe);
+
+    if (response.success) {
+      window.location.href = "/dashboard"; // Redirect on success
+    } else {
+      setAlertMessage(response.message);
+      setAlertOpen(true);
+    }
   };
 
   return (
@@ -105,7 +114,12 @@ const LoginForm = () => {
         </div>
 
         <div className="mt-4 flex items-center">
-          <Checkbox id="remember" className="mr-2" />
+        <Checkbox
+          id="remember"
+          className="mr-2"
+          checked={rememberMe}
+          onCheckedChange={() => setRememberMe(!rememberMe)}
+        />
           <Label htmlFor="remember" className="text-gray-700">
             Keep me signed in
           </Label>
@@ -118,7 +132,7 @@ const LoginForm = () => {
         </div>
         <div className="mt-4">
           <a href="/signup/user-signup" className="text-sm text-black font-semibold">
-            Don’t have an Account?{" "}
+            Don’t have an Account?{" "}x``
             <span className="text-emerald-800">Create one</span>
           </a>
         </div>
