@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/Sidebar/app-sidebar";
+import StudentLayout from "./StudentLayout/StudentLayout";
+import LandLordLayout from "./LandLordLayout/LandLordLayout";
 
 export default function ClientLayout({
   children,
@@ -13,10 +13,11 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isStudentPage = pathname.startsWith("/student");
+  const isLandlordPage = pathname.startsWith("/landlord");
   const hideHeaderFooter =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isHomePage = pathname === "/";
-  const showSidebar = pathname.startsWith("/landlord");
 
   return (
     <ThemeProvider
@@ -25,20 +26,12 @@ export default function ClientLayout({
       enableSystem
       disableTransitionOnChange
     >
-      {hideHeaderFooter ? (
+      {isStudentPage ? (
+        <StudentLayout>{children}</StudentLayout>
+      ) : isLandlordPage ? (
+        <LandLordLayout>{children}</LandLordLayout>
+      ) : hideHeaderFooter ? (
         <main className="flex flex-col min-h-screen">{children}</main>
-      ) : showSidebar ? (
-        <SidebarProvider>
-          <div className="flex">
-            {/* Sidebar Section */}
-            <AppSidebar />
-
-            <main className="flex-grow">
-            <SidebarTrigger />
-              {children}
-            </main>
-          </div>
-        </SidebarProvider>
       ) : (
         <div
           className="min-h-screen flex flex-col"
@@ -96,10 +89,10 @@ export default function ClientLayout({
             </div>
           </nav>
 
-          {/* 🔹 Page Content - Make it take remaining space */}
+          {/* 🔹 Page Content */}
           <main className="flex-grow">{children}</main>
 
-          {/* 🔹 Footer - Always at the bottom */}
+          {/* 🔹 Footer */}
           <footer className="bg-black bg-opacity-70 py-6 text-center mt-auto">
             <p className="text-white">
               © 2025 CombinatorialSolutions. All rights reserved.
