@@ -21,6 +21,7 @@ import {
   AlertDialogDescription,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import {signUpOwner} from "@/utils/SignUpAPI";
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -78,8 +79,8 @@ const MultiStepForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [securityQuestion, setSecurityQuestion] = useState("");
-  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [security_question, setSecurity_question] = useState("");
+  const [security_answer, setSecurity_answer] = useState("");
 
   // Unified validation function for each step
 
@@ -87,11 +88,61 @@ const MultiStepForm = () => {
     const emailValue = e.target.value;
     setEmail(emailValue);
 
-    // Check if email contains @ and .com
     if (!emailRegex.test(emailValue)) {
-      setAlertMessage("Please include '@...com' in your email.");
+      setAlertMessage("Please enter a valid email sytax (e.g. @gmail.com)");
     } else {
       setAlertMessage("");
+    }
+  };
+
+  const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
+        setError("Picture file size must be less than 3MB.");
+        setOpen(true);
+        return;
+      }
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setError("Picture must be an image or a PDF.");
+        setOpen(true);
+        return;
+      }
+      setPicture(file);
+    }
+  };
+
+  const handleIdDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
+        setError("ID document file size must be less than 3MB.");
+        setOpen(true);
+        return;
+      }
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setError("ID document must be an image or a PDF.");
+        setOpen(true);
+        return;
+      }
+      setIdDocument(file);
+    }
+  };
+
+  const handleLegalRecordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
+        setError("Legal Records document must be less than 3MB.");
+        setOpen(true);
+        return;
+      }
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setError("Legal Records document must be an image or a PDF.");
+        setOpen(true);
+        return;
+      }
+      setLegalRecord(file);
     }
   };
 
@@ -144,6 +195,11 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
+      if(isNaN(Number(phoneNumber))){
+        setError("The entered value for Phone Number should only be a Number.");
+        setOpen(true);
+        return;
+      }
       setStep(3);
     } else if (step === 3) {
       if (!email.trim()) {
@@ -161,6 +217,15 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+
+      if (!passwordRegex.test(password)) {
+        setError("Password must include at least 1 uppercase letter, 1 lowercase letter, and 1 special character.");
+        setOpen(true);
+        return;
+      }
+
       if (!confirmPassword) {
         setError("Please confirm your password.");
         setOpen(true);
@@ -171,16 +236,77 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
-      if (alertMessage.trim()) {
-        setError("Please enter the email in correct form.");
+
+      const trimmedQuestion = security_question.trim();
+      const trimmedAnswer = security_answer.trim();
+
+      if (trimmedQuestion && !trimmedAnswer) {
+        setError("Please provide a security answer since you entered a security question.");
         setOpen(true);
         return;
       }
+
+      if (trimmedAnswer && !trimmedQuestion) {
+        setError("Please provide a security question since you entered a security answer.");
+        setOpen(true);
+        return;
+      }
+      
+      // All validations passed; submit the form
+      handleSubmit();
+
       console.log("All validations passed. Form is ready for submission.");
     }
   };
 
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const monthToNumber = (month: string): string => {
+    const mapping: { [key: string]: string } = {
+      jan: "01",
+      feb: "02",
+      mar: "03",
+      apr: "04",
+      may: "05",
+      jun: "06",
+      jul: "07",
+      aug: "08",
+      sep: "09",
+      oct: "10",
+      nov: "11",
+      dec: "12",
+    };
+    return mapping[month.toLowerCase()] || "00";
+  };
+
+  const handleSubmit = async () => {
+    const dob = `${dobYear}-${monthToNumber(dobMonth)}-${dobDate.padStart(2, "0")}`;
+
+    const phoneNum = Number(phoneNumber);
+
+    const result = await signUpOwner(
+      firstName,
+      middleName.trim() !== "" ? middleName : null,
+      lastName,
+      nationality,
+      homeAddress,
+      dob,
+      gender,
+      picture,
+      idDocument,
+      legalRecord,
+      phoneNum,
+      email,
+      password,
+      security_question.trim() !== "" ? security_question : "",
+      security_answer.trim() !== "" ? security_answer : ""
+    );
+
+    if (!result.success) {
+      setError(result.message);
+      setOpen(true);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -351,27 +477,21 @@ const MultiStepForm = () => {
           <Input
             type="file"
             className="mb-12"
-            onChange={(e) =>
-              setPicture(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handlePictureChange}
           />
 
           <Label className="block mb-1">* Upload ID / Passport</Label>
           <Input
             type="file"
             className="mb-12"
-            onChange={(e) =>
-              setIdDocument(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handleIdDocumentChange}
           />
 
           <Label className="block mb-1">* Upload Legal Records</Label>
           <Input
             type="file"
             className="mb-12"
-            onChange={(e) =>
-              setLegalRecord(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handleLegalRecordChange}
           />
 
           <Label className="block mb-1">* Phone Number</Label>
@@ -440,7 +560,7 @@ const MultiStepForm = () => {
 
           <div className="mb-8">
             <Label className="block mb-1">Security Question</Label>
-            <Select onValueChange={(value) => setSecurityQuestion(value)}>
+            <Select onValueChange={(value) => setSecurity_question(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a security question" />
               </SelectTrigger>
@@ -467,8 +587,8 @@ const MultiStepForm = () => {
           <Label className="block mb-1">Answer</Label>
           <Input
             placeholder="Enter your answer"
-            value={securityAnswer}
-            onChange={(e) => setSecurityAnswer(e.target.value)}
+            value={security_answer}
+            onChange={(e) => setSecurity_answer(e.target.value)}
             className="mb-8"
           />
 

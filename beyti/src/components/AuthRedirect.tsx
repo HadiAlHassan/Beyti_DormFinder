@@ -13,7 +13,7 @@ const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
 
     if (token) {
       if (role === "landlord") {
-        router.replace("/landlord-dashboard");
+        router.replace("/landlord");
       } else if (role === "student") {
         router.replace("/student");
       } else {

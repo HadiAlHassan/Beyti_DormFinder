@@ -69,6 +69,64 @@ interface PromiseResponse {
     return { success: false, message: error.message || "An error occurred while signing up." };
   }
   };
+
+  const signUpOwner = async (
+    first_name: string,
+    middle_name: string | null,
+    last_name: string,
+    nationality: string,
+    home_address: string,
+    dob: string,
+    gender: string,
+    picture: File | null,
+    passport: File | null,
+    legalRecord: File | null,
+    phone_number: number,
+    email: string,
+    password: string,
+    security_question: string,
+    security_answer: string
+  ): Promise<PromiseResponse> => {
+    try {
+      const formData = new FormData();
+      formData.append("first_name", first_name);
+      if (middle_name) formData.append("middle_name", middle_name);
+      formData.append("last_name", last_name);
+      formData.append("nationality", nationality);
+      formData.append("home_address", home_address);
+      formData.append("dob", dob);
+      formData.append("gender", gender);
+      if (picture) formData.append("picture", picture);
+      if (passport) formData.append("passport", passport);
+      if (legalRecord) formData.append("legalRecord", legalRecord);
+      formData.append("phone_number", phone_number.toString());
+      formData.append("email", email);
+      formData.append("password", password);
+      if (security_question) formData.append("security_question", security_question);
+      if (security_answer) formData.append("security_answer", security_answer);
   
-  export default signUp;
+      // Updated fetch URL for the owner signup API
+      const response = await fetch("http://localhost:5000/signupOwner", {
+        method: "POST",
+        body: formData,
+      });
   
+      const data = await response.json();
+  
+      if (!response.ok) {
+        return { success: false, message: data.message };
+      }
+  
+      if (data.success) {
+        setCookie("authToken", data.jwt, 60, "landlord");
+        window.location.href = "/landlord";
+      }
+  
+      return { message: data.message, success: data.success };
+    } catch (error: any) {
+      console.error("Error signing up owner:", error);
+      return { success: false, message: error.message || "An error occurred while signing up." };
+    }
+  };
+  
+export { signUp, signUpOwner };

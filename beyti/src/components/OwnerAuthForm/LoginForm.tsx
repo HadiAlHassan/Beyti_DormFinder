@@ -4,6 +4,7 @@ import { Eye, EyeOff} from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {logInOwner} from "@/utils/LogInAPI";
 import { Checkbox } from "../ui/checkbox";
 import {
   AlertDialog,
@@ -19,10 +20,11 @@ const LoginForm = () => {
   const [selectedRole, setSelectedRole] = useState("Landlord");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       setAlertMessage("Please fill in all fields.");
       setAlertOpen(true);
@@ -33,8 +35,15 @@ const LoginForm = () => {
       setAlertOpen(true);
       return;
     }
-    // Proceed with login logic
-    console.log("Logging in...", { email, password });
+
+    const response = await logInOwner(email, password, rememberMe);
+
+    if (response.success) {
+      window.location.href = "/landlord";
+    } else {
+      setAlertMessage(response.message);
+      setAlertOpen(true);
+    }
   };
 
   return (
@@ -105,7 +114,12 @@ const LoginForm = () => {
         </div>
 
         <div className="mt-4 flex items-center">
-          <Checkbox id="remember" className="mr-2" />
+        <Checkbox
+          id="remember"
+          className="mr-2"
+          checked={rememberMe}
+          onCheckedChange={() => setRememberMe(!rememberMe)}
+        />
           <Label htmlFor="remember" className="text-gray-700">
             Keep me signed in
           </Label>

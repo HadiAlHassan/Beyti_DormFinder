@@ -21,7 +21,7 @@ import {
   AlertDialogDescription,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import signUp from "@/utils/SignUpAPI";
+import {signUp} from "@/utils/SignUpAPI";
 
 // Main MultiStepForm component
 const MultiStepForm = () => {
