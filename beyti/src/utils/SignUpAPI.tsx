@@ -59,8 +59,9 @@ interface PromiseResponse {
       }
 
       if (data.success) {
-      setCookie("authToken", data.jwt, 60, 'student');
-      window.location.href = "/student";
+      const studentId = data.profile?._id;
+      setCookie("authToken", data.jwt, 60, 'student', studentId);
+      window.location.href = `/student/${studentId}`;
       }
   
       return { message: data.message, success: data.success };
@@ -118,8 +119,9 @@ interface PromiseResponse {
       }
   
       if (data.success) {
-        setCookie("authToken", data.jwt, 60, "landlord");
-        window.location.href = "/landlord";
+        const ownerId = data.profile?._id;
+        setCookie("authToken", data.jwt, 60, "landlord",ownerId);
+        window.location.href = `/landlord/${ownerId}`;
       }
   
       return { message: data.message, success: data.success };

@@ -106,6 +106,8 @@ const MultiStepForm = () => {
     return mapping[month.toLowerCase()] || "00";
   };
 
+  const [emailError, setEmailError] = useState("");
+
 
   const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -138,6 +140,18 @@ const MultiStepForm = () => {
         return;
       }
       setIdDocument(file);
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const enteredEmail = e.target.value;
+    setEmail(enteredEmail);
+
+    const lauRegex = /^[^@\s]+@lau\.edu$/i; 
+    if (!lauRegex.test(enteredEmail) && enteredEmail.trim() !== "") {
+      setEmailError("Please enter a valid LAU email ending with @lau.edu");
+    } else {
+      setEmailError("");
     }
   };
 
@@ -206,6 +220,11 @@ const MultiStepForm = () => {
     } else if (step === 3) {
       if (!email.trim()) {
         setError("Please enter your email.");
+        setOpen(true);
+        return;
+      }
+      if (emailError) {
+        setError(emailError);
         setOpen(true);
         return;
       }
@@ -603,9 +622,10 @@ const MultiStepForm = () => {
             type="email"
             placeholder="Enter your LAU email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange} 
             className="mb-6"
           />
+          {emailError && <p className="text-red-500 text-sm mt-2 mb-2">{emailError}</p>}
 
           <Label className="block mb-1">* LAU ID</Label>
           <Input

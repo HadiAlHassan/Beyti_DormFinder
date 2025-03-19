@@ -4,6 +4,7 @@ interface PromiseResponse {
   success: boolean;
   message: string;
   token?: string;
+  profile?: any;
 }
 
 const logIn = async (
@@ -24,8 +25,9 @@ const logIn = async (
 
     if (data.success) {
       const expiryMinutes = rememberMe ? 4320 : 60;
-      setCookie("authToken", data.jwt, expiryMinutes, 'student');
-      return { success: true, message: "Login successful", token: data.jwt };
+      const studentId = data.profile?._id;
+      setCookie("authToken", data.jwt, expiryMinutes, 'student', studentId);
+      return { success: true, message: "Login successful", token: data.jwt, profile: data.profile, };
     }
 
     return { success: false, message: data.message };
@@ -53,8 +55,9 @@ const logInOwner = async (
 
     if (data.success) {
       const expiryMinutes = rememberMe ? 4320 : 60;
-      setCookie("authToken", data.jwt, expiryMinutes, 'landlord');
-      return { success: true, message: "Login successful", token: data.jwt };
+      const ownerId = data.profile?._id;
+      setCookie("authToken", data.jwt, expiryMinutes, 'landlord', ownerId);
+      return { success: true, message: "Login successful", token: data.jwt, profile: data.profile };
     }
 
     return { success: false, message: data.message };
