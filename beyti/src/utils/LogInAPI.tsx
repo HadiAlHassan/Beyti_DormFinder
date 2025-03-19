@@ -36,7 +36,7 @@ const logIn = async (
 };
 
 const logInOwner = async (
-  email: string,
+  email: string | null,
   password: string,
   rememberMe: boolean
 ): Promise<PromiseResponse> => {
