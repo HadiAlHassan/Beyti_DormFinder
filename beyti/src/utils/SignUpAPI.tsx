@@ -59,7 +59,7 @@ interface PromiseResponse {
       }
 
       if (data.success) {
-      const studentId = data.profile?._id;
+      const studentId = data.profile;
       setCookie("authToken", data.jwt, 60, 'student', studentId);
       window.location.href = `/student/${studentId}`;
       }
@@ -119,7 +119,7 @@ interface PromiseResponse {
       }
   
       if (data.success) {
-        const ownerId = data.profile?._id;
+        const ownerId = data.profile;
         setCookie("authToken", data.jwt, 60, "landlord",ownerId);
         window.location.href = `/landlord/${ownerId}`;
       }

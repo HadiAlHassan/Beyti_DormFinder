@@ -39,7 +39,7 @@ const LoginForm = () => {
     const response = await logIn(emailOrID, password, rememberMe);
 
     if (response.success) {
-      const studentId = response.profile?._id;  
+      const studentId = response.profile;  
       window.location.href = `/student/${studentId}`;
     } else {
       setAlertMessage(response.message);
