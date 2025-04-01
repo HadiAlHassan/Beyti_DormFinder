@@ -233,6 +233,11 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
+      if (lauId.trim().length !== 9) {
+        setError("LAU ID must be exactly 8 numbers long.");
+        setOpen(true);
+        return;
+      }
       if(isNaN(Number(lauId))){
         setError("The entered value for LAU ID should only be a Number.");
         setOpen(true);
@@ -625,7 +630,7 @@ const MultiStepForm = () => {
             onChange={handleEmailChange} 
             className="mb-6"
           />
-          {emailError && <p className="text-red-500 text-sm mt-2 mb-2">{emailError}</p>}
+          {emailError && <p className="text-red-500 text-sm mt-[-10px] mb-2">{emailError}</p>}
 
           <Label className="block mb-1">* LAU ID</Label>
           <Input
