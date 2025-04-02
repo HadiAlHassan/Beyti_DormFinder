@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientLayout from "@/components/ClientLayout"; // Import the client-side wrapper
+import { AppToaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 
@@ -24,7 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ClientLayout>{children}</ClientLayout>
+        <AppToaster />
+        <ClientLayout>{children} </ClientLayout>
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -40,7 +40,37 @@ export default function ContactForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    try {
+      const res = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      
+      console.log("🔍 Raw response:", res);
+      console.log("🔍 Status code:", res.status);
+      
+      let data;
+      try {
+        data = await res.json();
+        console.log("📨 Response JSON:", data);
+      } catch (err) {
+        console.error("❌ Invalid JSON response", err);
+      }
+      
+           
+      if (res.ok){ 
+        toast("Message Sent", {
+          description: "Thanks for contacting us.",
+        });
+        form.reset();
+      } else {
+        
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("Something went wrong. Please try again.");
+    }
   }
 
   return (
