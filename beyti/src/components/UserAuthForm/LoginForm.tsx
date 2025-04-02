@@ -127,9 +127,9 @@ const LoginForm = () => {
         </div>
 
         <div className="mt-2">
-          <a href="#" className="text-sm text-emerald-800 font-semibold">
-            Forget password?
-          </a>
+        <Link href="/forgot-password" className="text-sm text-emerald-800 font-semibold">
+          Forget password?
+        </Link>
         </div>
         <div className="mt-4">
           <a href="/signup/user-signup" className="text-sm text-black font-semibold">
