@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import MapPicker from "./MapPicker";
+import { createDormListing } from "@/utils/CreateDormAPI";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -31,8 +32,8 @@ interface Apartment {
 interface DormFormData {
   name: string;
   description: string;
-  lat: number | string;
-  lon: number | string;
+  lat: number;
+  lon: number;
   isBooked: boolean;
   pricePerMonth: number | string;
   capacity: number | string;
@@ -52,8 +53,8 @@ const AddDormModal: React.FC<AddDormModalProps> = ({ isOpen, setIsOpen }) => {
   const [formData, setFormData] = useState<DormFormData>({
     name: "",
     description: "",
-    lat: "",
-    lon: "",
+    lat: 0,
+    lon: 0,
     isBooked: false,
     pricePerMonth: "",
     capacity: "",
@@ -76,9 +77,14 @@ const AddDormModal: React.FC<AddDormModalProps> = ({ isOpen, setIsOpen }) => {
     setIsOpen(false);
   };
 
-  const handleSubmit = () => {
-    console.log("Submitted form data:", formData);
-    closeModal();
+  const handleSubmit = async () => {
+    try {
+      const result = await createDormListing(formData);
+      console.log("Dorm created:", result);
+      closeModal();
+    } catch (err) {
+      console.error("Error submitting dorm:", err);
+    }
   };
 
   return (
@@ -133,7 +139,11 @@ const AddDormModal: React.FC<AddDormModalProps> = ({ isOpen, setIsOpen }) => {
               <h3 className="font-semibold text-lg">Location</h3>
               <MapPicker
                 onLocationSet={(lat, lng) => {
-                  setFormData({ ...formData, lat, lon: lng });
+                  setFormData({
+                    ...formData,
+                    lat: Number(lat),
+                    lon: Number(lng),
+                  });
                 }}
               />
               <div className="text-sm text-muted-foreground">

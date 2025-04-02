@@ -1,12 +1,9 @@
-import { GoogleMap, useLoadScript } from "@react-google-maps/api";
-import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
-import { useRef, useState } from "react";
+"use client";
 
-const containerStyle = {
-  width: "100%",
-  height: "300px",
-};
+import { APIProvider, Map } from "@vis.gl/react-google-maps";
+import { MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const defaultCenter = {
   lat: 33.89316617148673,
@@ -18,57 +15,39 @@ interface MapPickerProps {
 }
 
 export default function MapPicker({ onLocationSet }: MapPickerProps) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.VITE_GOOGLE_MAPS_API_KEY!, // or process.env if using Next.js
-  });
-
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const [currentCenter, setCurrentCenter] = useState(defaultCenter);
-
-  const handleLoad = (map: google.maps.Map) => {
-    mapRef.current = map;
-    setCurrentCenter(map.getCenter()?.toJSON() || defaultCenter);
-  };
-
-  const handleDragEnd = () => {
-    if (mapRef.current) {
-      const center = mapRef.current.getCenter();
-      if (center) {
-        const coords = center.toJSON();
-        setCurrentCenter(coords);
-      }
-    }
-  };
-
-  if (!isLoaded) return <div>Loading map...</div>;
+  const [center, setCenter] = useState(defaultCenter);
 
   return (
-    <div className="space-y-2">
+    <APIProvider
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+      onLoad={() => console.log("Maps API loaded")}
+    >
       <div className="relative">
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          zoom={15}
-          center={currentCenter}
-          onLoad={handleLoad}
-          onDragEnd={handleDragEnd}
-          options={{
-            streetViewControl: false,
-            fullscreenControl: false,
+        <Map
+          style={{ width: "100%", height: "300px" }}
+          defaultCenter={defaultCenter}
+          defaultZoom={15}
+          onCameraChanged={(ev) => {
+            const c = ev.detail.center;
+            setCenter({ lat: c.lat, lng: c.lng });
           }}
+          gestureHandling="greedy"
+          disableDefaultUI={true}
         />
 
-        {/* Fixed Lucide pin */}
         <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10">
           <MapPin className="w-8 h-8 text-red-500" />
         </div>
       </div>
 
-      <Button
-        type="button"
-        onClick={() => onLocationSet(currentCenter.lat, currentCenter.lng)}
-      >
-        Set Location
-      </Button>
-    </div>
+      <div className="mt-2 flex justify-between items-center">
+        <p className="text-sm text-muted-foreground">
+          Lat: {center.lat.toFixed(6)}, Lng: {center.lng.toFixed(6)}
+        </p>
+        <Button onClick={() => onLocationSet(center.lat, center.lng)}>
+          Set Location
+        </Button>
+      </div>
+    </APIProvider>
   );
 }
