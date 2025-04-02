@@ -53,6 +53,13 @@ export default function StudentLayout({
                 Explore Dorms
               </Link>
               <Link
+                href="/student/roomate"
+                className="flex items-center p-3 hover:bg-gray-100"
+              >
+                <User className="mr-2 h-5 w-5" />
+                Find a Roomate
+              </Link>
+              <Link
                 href="/student/profile"
                 className="flex items-center p-3 hover:bg-gray-100"
               >
