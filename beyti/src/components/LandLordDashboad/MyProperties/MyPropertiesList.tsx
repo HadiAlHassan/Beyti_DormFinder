@@ -1,6 +1,7 @@
 // src/components/LandLordDashboard/MyProperties/MyPropertiesList.tsx
 
 import React, { useEffect, useState } from "react";
+import { getCookie } from "@/utils/cookieUtils"; // Adjust path as needed
 
 type Dorm = {
   _id: string;
@@ -24,21 +25,36 @@ const MyPropertiesList = () => {
   const [dorms, setDorms] = useState<Dorm[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDorms = async () => {
-      try {
-        const res = await fetch("/api/dorms/my-properties");
-        const data = await res.json();
-        setDorms(data);
-      } catch (err) {
-        console.error("Error fetching properties", err);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchDorms();
-  }, []);
+useEffect(() => {
+  const fetchDorms = async () => {
+    try {
+      const token = getCookie().token;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dorms/my-properties`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+     console.log("Fetched dorms response:", data);
+
+
+      setDorms(data);
+    } catch (err) {
+      console.error("Error fetching properties", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDorms();
+}, []);
+
 
   if (loading) return <p>Loading your properties...</p>;
   if (dorms.length === 0) return <p>You haven&apos;t listed any properties yet.</p>;

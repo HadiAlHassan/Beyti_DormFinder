@@ -77,15 +77,20 @@ const AddDormModal: React.FC<AddDormModalProps> = ({ isOpen, setIsOpen }) => {
     setIsOpen(false);
   };
 
-  const handleSubmit = async () => {
-    try {
-      const result = await createDormListing(formData);
-      console.log("Dorm created:", result);
-      closeModal();
-    } catch (err) {
-      console.error("Error submitting dorm:", err);
-    }
-  };
+const handleSubmit = async () => {
+  try {
+    const result = await createDormListing({
+      ...formData,
+      pricePerMonth: Number(formData.pricePerMonth),
+      capacity: Number(formData.capacity),
+    });
+    console.log("Dorm created:", result);
+    closeModal();
+  } catch (err) {
+    console.error("Error submitting dorm:", err);
+  }
+};
+
 
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
