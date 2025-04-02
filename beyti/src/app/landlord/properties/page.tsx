@@ -1,15 +1,13 @@
 "use client";
 
-import { getCookie } from "@/utils/cookieUtils";
+import MyProperties from "@/components/LandLordDashboad/MyProperties";
+//import { getCookie } from "@/utils/cookieUtils";
 
 export default function Page() {
-  const { userId} = getCookie(); // ✅ Get Id from cookies
 
-  return <>Welome Back Sir! 
-  Your id is {userId}
+  return <>
   
   <br />
-  you are now in the properties page
-  
+  <MyProperties/>
   </>;
 }
