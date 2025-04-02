@@ -8,7 +8,6 @@ export default function Page() {
   return <>
   
   <br />
-  you are now in the properties page
   <MyProperties/>
   </>;
 }
