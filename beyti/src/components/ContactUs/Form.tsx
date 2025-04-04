@@ -84,7 +84,7 @@ export default function ContactForm() {
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name</FormLabel>
+                <FormLabel className="text-black" >First Name</FormLabel>
                 <FormControl>
                   <Input placeholder="first name ..." {...field} />
                 </FormControl>
@@ -97,7 +97,7 @@ export default function ContactForm() {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name</FormLabel>
+                <FormLabel className="text-black" >Last Name</FormLabel>
                 <FormControl>
                   <Input placeholder="family name ..." {...field} />
                 </FormControl>
@@ -114,7 +114,7 @@ export default function ContactForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-black" >Email</FormLabel>
                 <FormControl>
                   <Input placeholder="first.last@example.com" {...field} />
                 </FormControl>
@@ -127,7 +127,7 @@ export default function ContactForm() {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel className="text-black" >Phone Number</FormLabel>
                 <FormControl>
                   <Input placeholder="+961 123 456" {...field} />
                 </FormControl>
@@ -173,7 +173,7 @@ export default function ContactForm() {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Message</FormLabel>
+              <FormLabel className="text-black" >Message</FormLabel>
               <FormControl>
                 <Textarea placeholder="Write your message..." {...field} />
               </FormControl>

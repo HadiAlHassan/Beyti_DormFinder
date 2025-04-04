@@ -1,6 +1,30 @@
+"use client"
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCookie } from "@/utils/cookieUtils";
 
 const InfoSection = () => {
+  const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { role } = getCookie();
+    setRole(role);
+  }, []);
+
+  const handleClick = () => {
+    if (!role) {
+      router.push("/login");
+    } else if (role === "student") {
+      router.push("/student/dashboard");
+    } else if (role === "landlord") {
+      router.push("/landlord/dashboard");
+    } else {
+      router.push("/login");
+    }
+  };
+
   return (
     <div className=" space-y-4 p-16 pl-24">
       <h1 className="text-5xl font-bold  text-emerald-800">
@@ -15,7 +39,7 @@ const InfoSection = () => {
       <br /><br />
       Join us in making student life easier, one dorm at a time.
       </p>
-      <Button className="bg-emerald-700 hover:bg-emerald-800 text-white">
+      <Button className="bg-emerald-700 hover:bg-emerald-800 text-white" onClick={handleClick}>
         Search Dorms
       </Button>
     </div>
