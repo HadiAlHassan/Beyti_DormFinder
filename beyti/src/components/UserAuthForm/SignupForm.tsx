@@ -117,11 +117,11 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
-      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-        setError("Picture must be an image or a PDF.");
+      if (!file.type.startsWith("image/")) {
+        setError("Picture must be an image file (jpg, jpeg, png, etc).");
         setOpen(true);
         return;
-      }
+      }      
       setPicture(file);
     }
   };
@@ -630,7 +630,7 @@ const MultiStepForm = () => {
             onChange={handleEmailChange} 
             className="mb-6"
           />
-          {emailError && <p className="text-red-500 text-sm mt-[-10px] mb-2">{emailError}</p>}
+          {emailError && <p className="text-red-500 text-sm mt-[-20px] mb-4">{emailError}</p>}
 
           <Label className="block mb-1">* LAU ID</Label>
           <Input

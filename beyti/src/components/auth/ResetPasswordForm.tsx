@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 export default function ResetPasswordForm({
   email,
@@ -13,6 +14,8 @@ export default function ResetPasswordForm({
 }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role") || "student";
 
   const handleReset = async () => {
     if (newPassword !== confirmPassword) {
@@ -23,7 +26,7 @@ export default function ResetPasswordForm({
     const res = await fetch("http://localhost:5000/api/reset-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code, newPassword }),
+      body: JSON.stringify({ email, code, newPassword, role}),
     });
 
     const data = await res.json();

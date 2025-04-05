@@ -103,8 +103,8 @@ const MultiStepForm = () => {
         setOpen(true);
         return;
       }
-      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-        setError("Picture must be an image or a PDF.");
+      if (!file.type.startsWith("image/")) {
+        setError("Picture must be an image file (jpg, jpeg, png, etc).");
         setOpen(true);
         return;
       }

@@ -100,7 +100,7 @@ const LoginForm = () => {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-10"
+              className="pr-10 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
             />
             <Button
               variant="ghost"
@@ -127,7 +127,7 @@ const LoginForm = () => {
         </div>
 
         <div className="mt-2">
-        <Link href="/forgot-password" className="text-sm text-emerald-800 font-semibold">
+        <Link href="/forgot-password?role=landlord" className="text-sm text-emerald-800 font-semibold">
           Forget password?
         </Link>
 
