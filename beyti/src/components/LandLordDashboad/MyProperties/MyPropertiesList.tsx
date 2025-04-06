@@ -1,83 +1,80 @@
-// src/components/LandLordDashboard/MyProperties/MyPropertiesList.tsx
+"use client";
 
-import React, { useEffect, useState } from "react";
-import { getCookie } from "@/utils/cookieUtils"; // Adjust path as needed
+import { useEffect, useState } from "react";
+import { getMyBuildings } from "@/utils/BuildingAPI";
+import BuildingCard from "./BuildingCard";
 
-type Dorm = {
+interface Apartment {
   _id: string;
   name: string;
-  description: string;
   pricePerMonth: number;
   capacity: number;
   availableSpots: number;
   isBooked: boolean;
-  isVisible: boolean;
+}
+
+interface Building {
+  _id: string;
+  name: string;
+  address: string;
+  description: string;
   amenities: string[];
+  isVisible: boolean;
   rules: {
     smoking: boolean;
     petsAllowed: boolean;
     noiseRestrictions: boolean;
     otherPolicies?: string;
   };
-};
+  apartments: Apartment[];
+  pictures?: {
+    data: { type: "Buffer"; data: number[] };
+    contentType: string;
+  }[];
+}
 
-const MyPropertiesList = () => {
-  const [dorms, setDorms] = useState<Dorm[]>([]);
+interface MyPropertiesListProps {
+  onAddApartment: (buildingId: string) => void;
+}
+
+const MyPropertiesList: React.FC<MyPropertiesListProps> = ({
+  onAddApartment,
+}) => {
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const data = await getMyBuildings();
+        setBuildings(data);
+      } catch (err) {
+        console.error("Error loading properties:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-useEffect(() => {
-  const fetchDorms = async () => {
-    try {
-      const token = getCookie().token;
+    fetchBuildings();
+  }, []);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dorms/my-properties`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await res.json();
-     console.log("Fetched dorms response:", data);
-
-
-      setDorms(data);
-    } catch (err) {
-      console.error("Error fetching properties", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchDorms();
-}, []);
-
-
-  if (loading) return <p>Loading your properties...</p>;
-  if (dorms.length === 0) return <p>You haven&apos;t listed any properties yet.</p>;
+  if (loading) return <p>Loading properties...</p>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {dorms.map((dorm) => (
-        <div key={dorm._id} className="border rounded-xl p-4 shadow-sm">
-          <h3 className="text-lg font-bold">{dorm.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{dorm.description}</p>
-          <p className="text-sm">💰 ${dorm.pricePerMonth}/month</p>
-          <p className="text-sm">
-            🛏️ Capacity: {dorm.capacity} | Available: {dorm.availableSpots}
-          </p>
-          <p className="text-sm">🔒 {dorm.isBooked ? "Booked" : "Available"}</p>
-          <p className="text-sm">
-            👁️ Visibility: {dorm.isVisible ? "Visible" : "Hidden"}
-          </p>
-          <p className="text-sm mt-2">
-            🏷️ Amenities: {dorm.amenities.join(", ")}
-          </p>
-        </div>
-      ))}
+    <div className="space-y-6">
+      {buildings.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          You have no buildings yet.
+        </p>
+      ) : (
+        buildings.map((building) => (
+          <BuildingCard
+            key={building._id}
+            building={building}
+            onAddApartment={onAddApartment}
+          />
+        ))
+      )}
     </div>
   );
 };

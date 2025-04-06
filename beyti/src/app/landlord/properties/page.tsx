@@ -1,6 +1,6 @@
 "use client";
 
-import MyProperties from "@/components/LandLordDashboad/MyProperties";
+import MyProperties from "@/components/LandLordDashboad/MyProperties/MyProperties";
 //import { getCookie } from "@/utils/cookieUtils";
 
 export default function Page() {
