@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,7 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
   setIsOpen,
 }) => {
   const [step, setStep] = useState<Step>(0);
+  const [image, setImage] = useState<File | null>(null);
 
   const [formData, setFormData] = useState<BuildingFormData>({
     name: "",
@@ -63,15 +66,35 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
   const closeModal = () => {
     setStep(0);
     setIsOpen(false);
+    setFormData({
+      name: "",
+      address: "",
+      description: "",
+      lat: 0,
+      lon: 0,
+      rules: {
+        smoking: false,
+        petsAllowed: false,
+        noiseRestrictions: false,
+        otherPolicies: "",
+      },
+      amenities: [],
+    });
+    setImage(null);
   };
 
   const handleSubmit = async () => {
     try {
-      const result = await createBuilding(formData);
+      const result = await createBuilding({
+        ...formData,
+        picture: image,
+      });
+
       console.log("Building created:", result);
       closeModal();
     } catch (err) {
       console.error("Error submitting building:", err);
+      alert("Failed to create building. Please try again.");
     }
   };
 
@@ -86,7 +109,6 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
           {step === 0 && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Basic Info</h3>
-
               <Input
                 placeholder="Building Name"
                 value={formData.name}
@@ -94,7 +116,6 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
               />
-
               <Input
                 placeholder="Address"
                 value={formData.address}
@@ -102,13 +123,19 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
                   setFormData({ ...formData, address: e.target.value })
                 }
               />
-
               <Input
                 placeholder="Short Description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+              />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) setImage(e.target.files[0]);
+                }}
               />
             </div>
           )}
@@ -138,10 +165,7 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      rules: {
-                        ...formData.rules,
-                        smoking: e.target.checked,
-                      },
+                      rules: { ...formData.rules, smoking: e.target.checked },
                     })
                   }
                 />
@@ -188,10 +212,7 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    rules: {
-                      ...formData.rules,
-                      otherPolicies: e.target.value,
-                    },
+                    rules: { ...formData.rules, otherPolicies: e.target.value },
                   })
                 }
               />

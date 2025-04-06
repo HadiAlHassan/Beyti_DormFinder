@@ -1,17 +1,4 @@
-import { getCookie } from "./cookieUtils";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
-// ---------- TYPES ----------
-
-export interface ApartmentPayload {
-  buildingId: string;
-  name: string;
-  description?: string;
-  pricePerMonth: number;
-  capacity: number;
-  availableSpots: number;
-}
+import { getCookie } from "@/utils/cookieUtils";
 
 export interface BuildingPayload {
   name: string;
@@ -26,63 +13,108 @@ export interface BuildingPayload {
     otherPolicies: string;
   };
   amenities: string[];
+  picture?: File | null;
 }
 
-// ---------- API FUNCTIONS ----------
-
-// GET all buildings with apartments for current landlord
-export const getMyBuildings = async () => {
-  const token = getCookie().token;
-
-  const res = await fetch(`${API_BASE}/api/buildings/my-properties`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) throw new Error("Failed to fetch buildings");
-
-  return await res.json();
-};
-
-// POST: create a building
-export const createBuilding = async (buildingData: BuildingPayload) => {
-  const token = getCookie().token;
-
-  const res = await fetch(`${API_BASE}/api/buildings`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(buildingData),
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Failed to create building: ${error}`);
+export async function createBuilding(data: BuildingPayload) {
+  const { token } = getCookie();
+  if (!token) {
+    throw new Error("Missing token.");
   }
 
-  return await res.json();
-};
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("address", data.address);
+  formData.append("description", data.description);
+  formData.append("lat", String(data.lat));
+  formData.append("lon", String(data.lon));
+  formData.append("rules", JSON.stringify(data.rules));
+  formData.append("amenities", JSON.stringify(data.amenities));
 
-// POST: create an apartment linked to a building
-export const createApartment = async (apartmentData: ApartmentPayload) => {
-  const token = getCookie().token;
-
-  const res = await fetch(`${API_BASE}/api/apartments`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(apartmentData),
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Failed to create apartment: ${error}`);
+  if (data.picture) {
+    formData.append("picture", data.picture);
   }
 
-  return await res.json();
-};
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/buildings`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to create building");
+  }
+
+  return await response.json();
+}
+
+
+export interface ApartmentPayload {
+  buildingId: string;
+  name: string;
+  description: string;
+  pricePerMonth: number;
+  capacity: number;
+  availableSpots: number;
+  pictures?: File[];
+}
+
+export async function createApartment(data: ApartmentPayload) {
+  const { token } = getCookie();
+  if (!token) {
+    throw new Error("Missing token.");
+  }
+
+  const formData = new FormData();
+  formData.append("buildingId", data.buildingId);
+  formData.append("name", data.name);
+  formData.append("description", data.description);
+  formData.append("pricePerMonth", String(data.pricePerMonth));
+  formData.append("capacity", String(data.capacity));
+  formData.append("availableSpots", String(data.availableSpots));
+
+  if (data.pictures) {
+    data.pictures.forEach((file) => {
+      formData.append("pictures", file); // keep name "pictures" for .array()
+    });
+  }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/apartments`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to create apartment");
+  }
+
+  return await response.json();
+}
+
+export async function getMyBuildings() {
+  const { token } = getCookie();
+  if (!token) {
+    throw new Error("Missing token.");
+  }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/buildings/my-properties`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to fetch buildings");
+  }
+
+  return await response.json();
+}
