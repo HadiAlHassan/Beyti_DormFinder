@@ -65,6 +65,13 @@ export default function LandLordLayout({
 
             <SidebarFooter>
               <Link
+                href="/"
+                className="flex items-center p-3 hover:bg-gray-100"
+              >
+                <Home className="mr-2 h-5 w-5" />
+                Home Page
+              </Link>
+              <Link
                 href="/logout"
                 className="flex items-center p-3 text-red-500 hover:bg-gray-100"
               >
