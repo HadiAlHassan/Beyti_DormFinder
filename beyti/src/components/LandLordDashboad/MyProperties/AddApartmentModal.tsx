@@ -9,21 +9,23 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { createApartment } from "@/utils/BuildingAPI";
 
 interface AddApartmentModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-  buildingId: string | null;
+  buildingId: string;
 }
 
 interface ApartmentFormData {
   name: string;
   description: string;
-  pricePerMonth: number | string;
-  capacity: number | string;
-  availableSpots: number | string;
+  pricePerMonth: string;
+  capacity: string;
+  availableSpots: string;
+  pictures: File[];
 }
 
 const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
@@ -37,6 +39,7 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
     pricePerMonth: "",
     capacity: "",
     availableSpots: "",
+    pictures: [],
   });
 
   const resetModal = () => {
@@ -46,26 +49,32 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
       pricePerMonth: "",
       capacity: "",
       availableSpots: "",
+      pictures: [],
     });
     setIsOpen(false);
   };
 
-  const handleSubmit = async () => {
-    if (!buildingId) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFormData({ ...formData, pictures: Array.from(e.target.files) });
+    }
+  };
 
+  const handleSubmit = async () => {
     try {
-      const result = await createApartment({
+      await createApartment({
         buildingId,
         name: formData.name,
         description: formData.description,
         pricePerMonth: Number(formData.pricePerMonth),
         capacity: Number(formData.capacity),
         availableSpots: Number(formData.availableSpots),
+        pictures: formData.pictures,
       });
-      console.log("Apartment created:", result);
+
       resetModal();
     } catch (err) {
-      console.error("Error submitting apartment:", err);
+      console.error("❌ Failed to create apartment:", err);
     }
   };
 
@@ -113,6 +122,17 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
               setFormData({ ...formData, availableSpots: e.target.value })
             }
           />
+
+          <div>
+            <Label htmlFor="pictures">Upload Pictures</Label>
+            <Input
+              id="pictures"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+          </div>
         </div>
 
         <DialogFooter>

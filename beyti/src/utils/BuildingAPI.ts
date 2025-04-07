@@ -52,42 +52,34 @@ export async function createBuilding(data: BuildingPayload) {
 }
 
 
-export interface ApartmentPayload {
+export async function createApartment(data: {
   buildingId: string;
   name: string;
   description: string;
   pricePerMonth: number;
   capacity: number;
   availableSpots: number;
-  pictures?: File[];
-}
-
-export async function createApartment(data: ApartmentPayload) {
+  pictures: File[];
+}) {
   const { token } = getCookie();
-  if (!token) {
-    throw new Error("Missing token.");
-  }
+  if (!token) throw new Error("Missing token.");
 
-  const formData = new FormData();
-  formData.append("buildingId", data.buildingId);
-  formData.append("name", data.name);
-  formData.append("description", data.description);
-  formData.append("pricePerMonth", String(data.pricePerMonth));
-  formData.append("capacity", String(data.capacity));
-  formData.append("availableSpots", String(data.availableSpots));
+  const fd = new FormData();
+  fd.append("buildingId", data.buildingId);
+  fd.append("name", data.name);
+  fd.append("description", data.description);
+  fd.append("pricePerMonth", data.pricePerMonth.toString());
+  fd.append("capacity", data.capacity.toString());
+  fd.append("availableSpots", data.availableSpots.toString());
 
-  if (data.pictures) {
-    data.pictures.forEach((file) => {
-      formData.append("pictures", file); // keep name "pictures" for .array()
-    });
-  }
+  data.pictures.forEach((file) => fd.append("pictures", file));
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/apartments`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    body: formData,
+    body: fd,
   });
 
   if (!response.ok) {
@@ -97,6 +89,7 @@ export async function createApartment(data: ApartmentPayload) {
 
   return await response.json();
 }
+
 
 export async function getMyBuildings() {
   const { token } = getCookie();
@@ -118,3 +111,4 @@ export async function getMyBuildings() {
 
   return await response.json();
 }
+

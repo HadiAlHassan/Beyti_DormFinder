@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getMyBuildings } from "@/utils/BuildingAPI";
 import BuildingCard from "./BuildingCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Apartment {
   _id: string;
@@ -46,8 +47,8 @@ const MyPropertiesList: React.FC<MyPropertiesListProps> = ({
   useEffect(() => {
     const fetchBuildings = async () => {
       try {
-        const data = await getMyBuildings();
-        setBuildings(data);
+        const response = await getMyBuildings();
+        setBuildings(response);
       } catch (err) {
         console.error("Error loading properties:", err);
       } finally {
@@ -58,23 +59,33 @@ const MyPropertiesList: React.FC<MyPropertiesListProps> = ({
     fetchBuildings();
   }, []);
 
-  if (loading) return <p>Loading properties...</p>;
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-64 w-full rounded-md" />
+        ))}
+      </div>
+    );
+  }
+
+  if (buildings.length === 0) {
+    return (
+      <p className="text-muted-foreground text-center">
+        No buildings added yet.
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {buildings.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          You have no buildings yet.
-        </p>
-      ) : (
-        buildings.map((building) => (
-          <BuildingCard
-            key={building._id}
-            building={building}
-            onAddApartment={onAddApartment}
-          />
-        ))
-      )}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {buildings.map((building) => (
+        <BuildingCard
+          key={building._id}
+          building={building}
+          onAddApartment={onAddApartment}
+        />
+      ))}
     </div>
   );
 };
