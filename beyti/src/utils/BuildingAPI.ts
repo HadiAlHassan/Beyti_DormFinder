@@ -1,18 +1,19 @@
 import { getCookie } from "@/utils/cookieUtils";
 
+// 🔄 Updated to remove amenities + add ispublic
 export interface BuildingPayload {
   name: string;
   address: string;
   description: string;
   lat: number;
   lon: number;
+  ispublic: boolean;
   rules: {
     smoking: boolean;
     petsAllowed: boolean;
     noiseRestrictions: boolean;
     otherPolicies: string;
   };
-  amenities: string[];
   picture?: File | null;
 }
 
@@ -29,7 +30,7 @@ export async function createBuilding(data: BuildingPayload) {
   formData.append("lat", String(data.lat));
   formData.append("lon", String(data.lon));
   formData.append("rules", JSON.stringify(data.rules));
-  formData.append("amenities", JSON.stringify(data.amenities));
+  formData.append("ispublic", String(data.ispublic));
 
   if (data.picture) {
     formData.append("picture", data.picture);
@@ -51,7 +52,6 @@ export async function createBuilding(data: BuildingPayload) {
   return await response.json();
 }
 
-
 export async function createApartment(data: {
   buildingId: string;
   name: string;
@@ -59,6 +59,7 @@ export async function createApartment(data: {
   pricePerMonth: number;
   capacity: number;
   availableSpots: number;
+  amenities: string[]; // ✅ Added this
   pictures: File[];
 }) {
   const { token } = getCookie();
@@ -71,6 +72,7 @@ export async function createApartment(data: {
   fd.append("pricePerMonth", data.pricePerMonth.toString());
   fd.append("capacity", data.capacity.toString());
   fd.append("availableSpots", data.availableSpots.toString());
+  fd.append("amenities", JSON.stringify(data.amenities));
 
   data.pictures.forEach((file) => fd.append("pictures", file));
 
@@ -89,7 +91,6 @@ export async function createApartment(data: {
 
   return await response.json();
 }
-
 
 export async function getMyBuildings() {
   const { token } = getCookie();
@@ -112,3 +113,39 @@ export async function getMyBuildings() {
   return await response.json();
 }
 
+// ✅ Add public building fetcher for dropdown
+export async function getPublicBuildings() {
+  const { token } = getCookie();
+  if (!token) throw new Error("Missing token.");
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/buildings/public`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to fetch public buildings");
+  }
+
+  return await response.json();
+}
+
+export async function getBuildingById(id: string) {
+  const { token } = getCookie();
+  if (!token) throw new Error("Missing token.");
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/buildings/${id}`,
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) return null;
+  return await response.json();
+}

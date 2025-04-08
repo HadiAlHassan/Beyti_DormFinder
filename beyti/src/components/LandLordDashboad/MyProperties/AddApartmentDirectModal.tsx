@@ -11,53 +11,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { getPublicBuildings, createApartment } from "@/utils/BuildingAPI";
+import { useState } from "react";
+import { createApartment } from "@/utils/BuildingAPI";
 
-const AVAILABLE_AMENITIES = ["Wifi", "Electricity", "Water", "Gas", "Room Service"];
+const AMENITIES = ["Wifi", "Electricity", "Water", "Gas", "Room Service"];
 
-interface AddApartmentModalProps {
+interface AddApartmentDirectModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-}
-
-interface ApartmentFormData {
-  name: string;
-  description: string;
-  pricePerMonth: string;
-  capacity: string;
-  availableSpots: string;
-  amenities: string[];
-  pictures: File[];
   buildingId: string;
 }
 
-const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
+const AddApartmentDirectModal: React.FC<AddApartmentDirectModalProps> = ({
   isOpen,
   setIsOpen,
+  buildingId,
 }) => {
-  const [buildings, setBuildings] = useState<{ _id: string; name: string }[]>([]);
-  const [formData, setFormData] = useState<ApartmentFormData>({
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     pricePerMonth: "",
     capacity: "",
     availableSpots: "",
-    amenities: [],
-    pictures: [],
-    buildingId: "",
+    amenities: [] as string[],
+    pictures: [] as File[],
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      getPublicBuildings()
-        .then((data) => setBuildings(data))
-        .catch((err) => {
-          console.error("Failed to load buildings:", err);
-        });
-    }
-  }, [isOpen]);
+  const handleCheckbox = (amenity: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter((a) => a !== amenity)
+        : [...prev.amenities, amenity],
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -65,18 +52,10 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
     }
   };
 
-  const toggleAmenity = (amenity: string) => {
-    const updated = formData.amenities.includes(amenity)
-      ? formData.amenities.filter((a) => a !== amenity)
-      : [...formData.amenities, amenity];
-
-    setFormData({ ...formData, amenities: updated });
-  };
-
   const handleSubmit = async () => {
     try {
       await createApartment({
-        buildingId: formData.buildingId,
+        buildingId,
         name: formData.name,
         description: formData.description,
         pricePerMonth: Number(formData.pricePerMonth),
@@ -86,7 +65,6 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         pictures: formData.pictures,
       });
 
-      setIsOpen(false);
       setFormData({
         name: "",
         description: "",
@@ -95,10 +73,10 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         availableSpots: "",
         amenities: [],
         pictures: [],
-        buildingId: "",
       });
+      setIsOpen(false);
     } catch (err) {
-      console.error("❌ Failed to create apartment:", err);
+      console.error("Error creating apartment:", err);
     }
   };
 
@@ -110,27 +88,6 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div>
-            <Label>Select Building</Label>
-            <Select
-              value={formData.buildingId}
-              onValueChange={(value) =>
-                setFormData({ ...formData, buildingId: value })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a public building..." />
-              </SelectTrigger>
-              <SelectContent>
-                {buildings.map((b) => (
-                  <SelectItem key={b._id} value={b._id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <Input
             placeholder="Apartment Name"
             value={formData.name}
@@ -171,11 +128,11 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
           <div>
             <Label>Amenities</Label>
             <div className="grid grid-cols-2 gap-2 pt-2">
-              {AVAILABLE_AMENITIES.map((amenity) => (
+              {AMENITIES.map((amenity) => (
                 <label key={amenity} className="flex items-center gap-2">
                   <Checkbox
                     checked={formData.amenities.includes(amenity)}
-                    onCheckedChange={() => toggleAmenity(amenity)}
+                    onCheckedChange={() => handleCheckbox(amenity)}
                   />
                   {amenity}
                 </label>
@@ -203,4 +160,4 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
   );
 };
 
-export default AddApartmentModal;
+export default AddApartmentDirectModal;

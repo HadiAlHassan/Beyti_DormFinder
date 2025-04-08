@@ -9,11 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import MapPicker from "./MapPicker";
 import { createBuilding } from "@/utils/BuildingAPI";
 
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2;
 
 interface Rules {
   smoking: boolean;
@@ -28,8 +30,8 @@ interface BuildingFormData {
   description: string;
   lat: number;
   lon: number;
+  ispublic: boolean;
   rules: Rules;
-  amenities: string[];
 }
 
 interface AddBuildingModalProps {
@@ -50,37 +52,37 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
     description: "",
     lat: 0,
     lon: 0,
+    ispublic: false,
     rules: {
       smoking: false,
       petsAllowed: false,
       noiseRestrictions: false,
       otherPolicies: "",
     },
-    amenities: [],
   });
 
   const goNext = () =>
-    setStep((prev) => (prev < 3 ? ((prev + 1) as Step) : prev));
+    setStep((prev) => (prev < 2 ? ((prev + 1) as Step) : prev));
   const goBack = () =>
     setStep((prev) => (prev > 0 ? ((prev - 1) as Step) : prev));
   const closeModal = () => {
     setStep(0);
     setIsOpen(false);
+    setImage(null);
     setFormData({
       name: "",
       address: "",
       description: "",
       lat: 0,
       lon: 0,
+      ispublic: false,
       rules: {
         smoking: false,
         petsAllowed: false,
         noiseRestrictions: false,
         otherPolicies: "",
       },
-      amenities: [],
     });
-    setImage(null);
   };
 
   const handleSubmit = async () => {
@@ -137,6 +139,17 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
                   if (e.target.files?.[0]) setImage(e.target.files[0]);
                 }}
               />
+
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch
+                  id="ownership-switch"
+                  checked={!formData.ispublic}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, ispublic: !checked })
+                  }
+                />
+                <Label htmlFor="ownership-switch">Do you own this dorm?</Label>
+              </div>
             </div>
           )}
 
@@ -218,24 +231,6 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
               />
             </div>
           )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Amenities</h3>
-              <Input
-                placeholder="Comma separated list (e.g. WiFi, Kitchen)"
-                value={formData.amenities.join(", ")}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    amenities: e.target.value
-                      .split(",")
-                      .map((item) => item.trim()),
-                  })
-                }
-              />
-            </div>
-          )}
         </div>
 
         <DialogFooter className="flex justify-between">
@@ -243,7 +238,7 @@ const AddBuildingModal: React.FC<AddBuildingModalProps> = ({
             Back
           </Button>
 
-          {step < 3 ? (
+          {step < 2 ? (
             <Button onClick={goNext}>Next</Button>
           ) : (
             <Button onClick={handleSubmit}>Submit Building</Button>
