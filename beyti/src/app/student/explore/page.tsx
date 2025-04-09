@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DormSearchBar from "@/components/StudentDashboard/SeachBarCompDorms";
 import { getDistanceFromLatLonInKm } from "@/lib/distance";
 import { getCookie } from "@/utils/cookieUtils";
-import { useRouter } from "next/navigation";
+import DormMap from "@/components/StudentDashboard/Dorms/DormMap";
 import StudentBuildingCard from "@/components/StudentDashboard/Dorms/BuildingCard";
 
 const LAU_LAT = 33.8959;
@@ -16,6 +16,7 @@ interface Apartment {
   pricePerMonth: number;
   capacity: number;
   availableSpots: number;
+  isBooked: boolean;
 }
 
 interface Building {
@@ -25,14 +26,32 @@ interface Building {
   description: string;
   lat: number;
   lon: number;
+  isVisible: boolean;
+  ispublic: boolean;
+  rules: {
+    smoking: boolean;
+    petsAllowed: boolean;
+    noiseRestrictions: boolean;
+    otherPolicies?: string;
+  };
   apartments: Apartment[];
 }
 
-const Page = () => {
+interface SearchCriteria {
+  name?: string;
+  priceRange: {
+    min?: number;
+    max?: number;
+  };
+  apartmentType?: "private" | "shared";
+  proximity?: number;
+  amenities?: string[];
+}
+
+const Page: React.FC = () => {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [filteredBuildings, setFilteredBuildings] = useState<Building[]>([]);
-  const [viewMode, setViewMode] = useState<"map" | "catalog">("catalog");
-  const router = useRouter();
+  const [viewMode, setViewMode] = useState<"map" | "catalog">("map");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +68,7 @@ const Page = () => {
           }
         );
 
-        const data = await res.json();
-        console.log(data);
+        const data: Building[] = await res.json();
         setBuildings(data);
         setFilteredBuildings(data);
       } catch (err) {
@@ -61,13 +79,13 @@ const Page = () => {
     fetchData();
   }, []);
 
-  const handleSearch = (criteria: any) => {
+  const handleSearch = (criteria: SearchCriteria) => {
     const filtered = buildings.filter((building) =>
       building.apartments.some((apt) => {
         const matchesPrice =
-          (!criteria.priceRange.min ||
+          (criteria.priceRange.min === undefined ||
             apt.pricePerMonth >= criteria.priceRange.min) &&
-          (!criteria.priceRange.max ||
+          (criteria.priceRange.max === undefined ||
             apt.pricePerMonth <= criteria.priceRange.max);
 
         const matchesType =
@@ -86,7 +104,7 @@ const Page = () => {
           LAU_LON
         );
         const matchesProximity =
-          !criteria.proximity || distance <= criteria.proximity;
+          criteria.proximity === undefined || distance <= criteria.proximity;
 
         return matchesPrice && matchesType && matchesName && matchesProximity;
       })
@@ -128,9 +146,7 @@ const Page = () => {
 
       {/* View Rendering */}
       {viewMode === "map" ? (
-        <div className="border rounded p-10 text-center text-gray-500 bg-gray-100">
-          🗺️ Map view placeholder — coming soon
-        </div>
+        <DormMap buildings={filteredBuildings} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBuildings.map((building) => (
