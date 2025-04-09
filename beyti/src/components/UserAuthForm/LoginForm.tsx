@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import {logIn} from "@/utils/LogInAPI";
+import { logIn } from "@/utils/LogInAPI";
 import { Checkbox } from "../ui/checkbox";
 import {
   AlertDialog,
@@ -14,15 +14,18 @@ import {
   AlertDialogCancel,
 } from "../ui/alert-dialog";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [selectedRole, setSelectedRole] = useState("Student");
-  let [emailOrID, setEmailOrID] = useState("");
+  const [emailOrID, setEmailOrID] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+
+  const router = useRouter();
 
   const handleLogin = async () => {
     if (!emailOrID.trim() || !password.trim()) {
@@ -30,11 +33,13 @@ const LoginForm = () => {
       setAlertOpen(true);
       return;
     }
+
     if (emailOrID.includes("@") && emailOrID.endsWith("@lau.edu")) {
       setAlertMessage("Please use a LAU email without @lau.edu.");
       setAlertOpen(true);
-      return; 
+      return;
     }
+
     if (password.length < 8) {
       setAlertMessage("Password must be at least 8 characters long.");
       setAlertOpen(true);
@@ -45,12 +50,11 @@ const LoginForm = () => {
     if (!loginIdentifier.includes("@")) {
       loginIdentifier = `${loginIdentifier}@lau.edu`;
     }
-    emailOrID = loginIdentifier;
-    const response = await logIn(emailOrID, password, rememberMe);
+
+    const response = await logIn(loginIdentifier, password, rememberMe);
 
     if (response.success) {
-      const studentId = response.profile;  
-      window.location.href = `/student/${studentId}`;
+      router.push("/student/home");
     } else {
       setAlertMessage(response.message);
       setAlertOpen(true);
@@ -58,7 +62,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center  bg-gray-100 rounded-3xl enlarge">
+    <div className="flex justify-center items-center bg-gray-100 rounded-3xl enlarge">
       {/* Shadcn AlertDialog for Validation Errors */}
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
         <AlertDialogContent>
@@ -69,7 +73,9 @@ const LoginForm = () => {
       </AlertDialog>
 
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-center dark:text-black">Log In</h2>
+        <h2 className="text-2xl font-semibold text-center dark:text-black">
+          Log In
+        </h2>
         <p className="text-gray-600 text-center">Welcome Back Sailor!</p>
 
         <div className="flex gap-2 mt-4 justify-center">
@@ -81,13 +87,13 @@ const LoginForm = () => {
             Student
           </Button>
           <Link href="/login/owner-login">
-          <Button
-            variant={selectedRole === "Landlord" ? "default" : "outline"}
-            className="px-4 py-2 rounded-full"
-            onClick={() => setSelectedRole("Landlord")}
-          >
-            Landlord
-          </Button>
+            <Button
+              variant={selectedRole === "Landlord" ? "default" : "outline"}
+              className="px-4 py-2 rounded-full"
+              onClick={() => setSelectedRole("Landlord")}
+            >
+              Landlord
+            </Button>
           </Link>
         </div>
 
@@ -125,25 +131,31 @@ const LoginForm = () => {
         </div>
 
         <div className="mt-4 flex items-center">
-        <Checkbox
-          id="remember"
-          className="mr-2"
-          checked={rememberMe}
-          onCheckedChange={() => setRememberMe(!rememberMe)}
-        />
+          <Checkbox
+            id="remember"
+            className="mr-2"
+            checked={rememberMe}
+            onCheckedChange={() => setRememberMe(!rememberMe)}
+          />
           <Label htmlFor="remember" className="text-gray-700">
             Keep me signed in
           </Label>
         </div>
 
         <div className="mt-2">
-        <Link href="/forgot-password?role=student" className="text-sm text-emerald-800 font-semibold">
-          Forget password?
-        </Link>
+          <Link
+            href="/forgot-password?role=student"
+            className="text-sm text-emerald-800 font-semibold"
+          >
+            Forget password?
+          </Link>
         </div>
         <div className="mt-4">
-          <a href="/signup/user-signup" className="text-sm text-black font-semibold">
-            Don't have an Account?{" "}
+          <a
+            href="/signup/user-signup"
+            className="text-sm text-black font-semibold"
+          >
+            Don&apos;t have an Account?{" "}
             <span className="text-emerald-800">Create one</span>
           </a>
         </div>
