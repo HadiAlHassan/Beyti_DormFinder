@@ -26,7 +26,7 @@ const DormSearchBar: React.FC<Props> = ({ onSearch }) => {
 
   const applyFilters = () => {
     const criteria = {
-      name: searchName,
+      name: searchName.trim() || undefined,
       priceRange,
       apartmentType,
       amenities: selectedAmenities,

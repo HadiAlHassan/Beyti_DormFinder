@@ -12,6 +12,8 @@ import Link from "next/link";
 import { Home, Book, User, LogOut, Compass } from "lucide-react";
 import ProtectedLayout from "../ProtectLayout";
 import { UserProvider } from "@/context/UserContext";
+import { DormDataProvider } from "@/context/DormContext";
+import { ApartmentProvider } from "@/context/ApartmentsContext";
 
 export default function StudentLayout({
   children,
@@ -21,6 +23,8 @@ export default function StudentLayout({
   return (
     <ProtectedLayout allowedRole="student" redirectTo="/">
       <UserProvider>
+      <DormDataProvider>
+      <ApartmentProvider>
         <SidebarProvider>
           <div className="flex min-h-screen w-full">
             {/* 🔹 Sidebar Section */}
@@ -96,6 +100,8 @@ export default function StudentLayout({
             <main className="flex-grow w-full p-6 md:p-6">{children}</main>
           </div>
         </SidebarProvider>
+      </ApartmentProvider>
+      </DormDataProvider>
       </UserProvider>
     </ProtectedLayout>
   );

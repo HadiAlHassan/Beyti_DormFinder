@@ -50,6 +50,13 @@ const StudentBuildingCard: React.FC<Props> = ({ building }) => {
         ).toString("base64")}`
       : null;
 
+  // ✅ Build the query string
+  const queryParams = new URLSearchParams({
+    name: building.name,
+    address: building.address,
+    description: building.description,
+  }).toString();
+
   return (
     <Card className="group w-full space-y-4 overflow-hidden border shadow-md transition-all duration-300 hover:shadow-lg hover:border-primary hover:ring-2 hover:ring-primary/30">
       {imageUrl && (
@@ -109,7 +116,9 @@ const StudentBuildingCard: React.FC<Props> = ({ building }) => {
           <Button
             size="sm"
             variant="link"
-            onClick={() => router.push(`/student/buildings/${building._id}`)}
+            onClick={() =>
+              router.push(`/student/buildings/${building._id}?${queryParams}`)
+            }
           >
             View Apartments →
           </Button>

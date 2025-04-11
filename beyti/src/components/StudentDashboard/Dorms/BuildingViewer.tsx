@@ -1,58 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getStudentBuildingById } from "@/utils/StudentBuildingAPI";
+import { useApartmentData } from "@/context/ApartmentsContext";
 import ApartmentCard from "./ApartmentCard";
 
 interface BuildingViewerProps {
   buildingId: string;
-}
-
-interface Apartment {
-  _id: string;
-  name: string;
+  name?: string;
+  address?: string;
   description?: string;
-  pricePerMonth: number;
-  capacity: number;
-  availableSpots: number;
-  isBooked: boolean;
-  amenities: string[];
 }
 
-export default function BuildingViewer({ buildingId }: BuildingViewerProps) {
-  const [building, setBuilding] = useState<{
-    name: string;
-    address: string;
-    description: string;
-    apartments: Apartment[];
-  } | null>(null);
+const BuildingViewer: React.FC<BuildingViewerProps> = ({
+  buildingId,
+  name,
+  address,
+  description,
+}) => {
+  const { apartmentsByBuilding, loading, error } = useApartmentData();
 
-  useEffect(() => {
-    getStudentBuildingById(buildingId)
-      .then(setBuilding)
-      .catch((err) => console.error("Failed to load building", err));
-  }, [buildingId]);
+  const apartments = apartmentsByBuilding?.[buildingId] || [];
 
-  if (!building) return <p className="p-6">Loading...</p>;
+  if (loading) {
+    return <p className="p-6">Loading apartments...</p>;
+  }
+
+  if (error) {
+    return <p className="p-6 text-red-500">Error loading apartments: {error}</p>;
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{building.name}</h1>
-        <p className="text-muted-foreground">{building.address}</p>
-        <p className="text-muted-foreground">{building.description}</p>
+        <h1 className="text-2xl font-bold">{name ?? "Unnamed Building"}</h1>
+        {address && <p className="text-muted-foreground">{address}</p>}
+        {description && <p className="text-muted-foreground">{description}</p>}
       </div>
 
-      {!building.apartments || building.apartments.length === 0 ? (
+      {apartments.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No apartments yet in this building.
+          No apartments available in this building.
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {building.apartments.map((apt) => (
+          {apartments.map((apt) => (
             <ApartmentCard
               key={apt._id}
-              apartment={apt}
+              apartment={{
+                ...apt,
+                amenities: apt.amenities ?? [], // ✅ ensure amenities is always an array
+              }}
               onView={() => console.log("View", apt._id)}
               onEdit={() => console.log("Edit", apt._id)}
             />
@@ -61,4 +57,6 @@ export default function BuildingViewer({ buildingId }: BuildingViewerProps) {
       )}
     </div>
   );
-}
+};
+
+export default BuildingViewer;
