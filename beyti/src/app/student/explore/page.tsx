@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import useSWR from "swr";
 import DormSearchBar from "@/components/StudentDashboard/SeachBarCompDorms";
-import { getDistanceFromLatLonInKm } from "@/lib/distance";
-import { getCookie } from "@/utils/cookieUtils";
 import DormMap from "@/components/StudentDashboard/Dorms/DormMap";
 import StudentBuildingCard from "@/components/StudentDashboard/Dorms/BuildingCard";
+import { getCookie } from "@/utils/cookieUtils";
+import { getDistanceFromLatLonInKm } from "@/lib/distance";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const LAU_LAT = 33.8959;
 const LAU_LON = 35.4786;
@@ -48,39 +50,43 @@ interface SearchCriteria {
   amenities?: string[];
 }
 
-const Page: React.FC = () => {
-  const [buildings, setBuildings] = useState<Building[]>([]);
+// 🔁 SWR fetcher with auth
+const fetcherWithAuth = async (url: string) => {
+  const { token } = getCookie();
+  if (!token) throw new Error("Missing token");
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch buildings");
+  return res.json();
+};
+
+const ExplorePage: React.FC = () => {
+  const { data, error, isLoading, mutate } = useSWR<Building[]>(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/buildings-with-apartments`,
+    fetcherWithAuth,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 1800000,
+    }
+  );
+
   const [filteredBuildings, setFilteredBuildings] = useState<Building[]>([]);
   const [viewMode, setViewMode] = useState<"map" | "catalog">("map");
 
+  // Set filteredBuildings when data is ready
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { token } = getCookie();
-        if (!token) throw new Error("Missing token");
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/buildings-with-apartments`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data: Building[] = await res.json();
-        setBuildings(data);
-        setFilteredBuildings(data);
-      } catch (err) {
-        console.error("Error fetching buildings:", err);
-      }
-    };
-
-    fetchData();
-  }, []);
+    if (data) setFilteredBuildings(data);
+  }, [data]);
 
   const handleSearch = (criteria: SearchCriteria) => {
-    const filtered = buildings.filter((building) =>
+    if (!data) return;
+
+    const filtered = data.filter((building) =>
       building.apartments.some((apt) => {
         const matchesPrice =
           (criteria.priceRange.min === undefined ||
@@ -144,18 +150,32 @@ const Page: React.FC = () => {
         </div>
       </div>
 
-      {/* View Rendering */}
       {viewMode === "map" ? (
-        <DormMap buildings={filteredBuildings} />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBuildings.map((building) => (
-            <StudentBuildingCard key={building._id} building={building} />
-          ))}
-        </div>
-      )}
+  <div className="relative h-[700px] w-full">
+    {/* Map container */}
+    <DormMap buildings={filteredBuildings} />
+
+    {/* Overlay spinner while map loads */}
+    {isLoading && (
+      <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300">
+        <LoadingSpinner />
+      </div>
+    )}
+  </div>
+) : isLoading ? (
+  <div className="flex justify-center mt-12">
+    <LoadingSpinner />
+  </div>
+) : (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {filteredBuildings.map((building) => (
+      <StudentBuildingCard key={building._id} building={building} />
+    ))}
+  </div>
+)}
+
     </div>
   );
 };
 
-export default Page;
+export default ExplorePage;
