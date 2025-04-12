@@ -2,6 +2,9 @@
 
 import { useApartmentData } from "@/context/ApartmentsContext";
 import ApartmentCard from "./ApartmentCard";
+import { useState } from "react";
+import { BookingDialog } from "./BookingModal";
+import { getCookie } from "@/utils/cookieUtils";
 
 interface BuildingViewerProps {
   buildingId: string;
@@ -16,8 +19,10 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
   address,
   description,
 }) => {
+  const { userId: studentId } = getCookie();
+  if (!studentId) return null;
   const { apartmentsByBuilding, loading, error } = useApartmentData();
-
+  const [selectedApartment, setSelectedApartment] = useState<any | null>(null);
   const apartments = apartmentsByBuilding?.[buildingId] || [];
 
   if (loading) {
@@ -49,11 +54,25 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
                 ...apt,
                 amenities: apt.amenities ?? [], // ✅ ensure amenities is always an array
               }}
-              onView={() => console.log("View", apt._id)}
+              onView={() => setSelectedApartment(apt)}
               onEdit={() => console.log("Edit", apt._id)}
             />
           ))}
         </div>
+      )}
+
+      {selectedApartment && (
+        <BookingDialog
+          open={!!selectedApartment}
+          apartment={{
+            _id: selectedApartment._id,
+            pricePerMonth: selectedApartment.pricePerMonth,
+            dormOwnerId: selectedApartment.dormOwner,
+            buildingId: selectedApartment.building,
+          }}
+          studentId={studentId}
+          onClose={() => setSelectedApartment(null)}
+        />
       )}
     </div>
   );

@@ -17,6 +17,8 @@ interface Apartment {
     data: { type: "Buffer"; data: number[] };
     contentType: string;
   }[];
+  dormOwner: string;
+  building: string;
 }
 
 interface ApartmentContextType {
@@ -46,6 +48,7 @@ export const ApartmentProvider = ({ children }: { children: React.ReactNode }) =
 
         const data = await res.json();
         setApartmentsByBuilding(data);
+        console.log(data);
       } catch (err) {
         setError("Failed to fetch apartments");
       } finally {
