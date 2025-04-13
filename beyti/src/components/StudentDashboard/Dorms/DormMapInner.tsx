@@ -38,32 +38,42 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
     lat: number;
     lng: number;
   } | null>(null);
+  const [searchRadius, setSearchRadius] = useState(200);
   const router = useRouter();
+
+  const fetchNearbyPlaces = (center: { lat: number; lng: number }) => {
+    if (!map) return;
+
+    const service = new google.maps.places.PlacesService(map);
+    const types = ["restaurant", "gym", "pharmacy"] as const;
+    const allPlaces: google.maps.places.PlaceResult[] = [];
+
+    let completed = 0;
+    types.forEach((type) => {
+      service.nearbySearch(
+        {
+          location: center,
+          radius: searchRadius,
+          type,
+        },
+        (results, status) => {
+          completed++;
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            allPlaces.push(...results);
+          }
+          if (completed === types.length) {
+            setPlaces(allPlaces);
+          }
+        }
+      );
+    });
+  };
 
   const showRadar = (center: { lat: number; lng: number }) => {
     setSelectedBuilding(null);
     setPlaces([]);
     setCircleCenter(center);
-
-    if (!map) return;
-
-    const service = new google.maps.places.PlacesService(map);
-    const types = ["restaurant", "gym", "pharmacy"] as const;
-
-    types.forEach((type) => {
-      service.nearbySearch(
-        {
-          location: center,
-          radius: 200,
-          type,
-        },
-        (results, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            setPlaces((prev) => [...prev, ...results]);
-          }
-        }
-      );
-    });
+    fetchNearbyPlaces(center);
   };
 
   useEffect(() => {
@@ -71,7 +81,7 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
 
     const circle = new google.maps.Circle({
       center: circleCenter,
-      radius: 200,
+      radius: searchRadius,
       strokeColor: "#4ade80",
       fillColor: "#bbf7d0",
       strokeOpacity: 0.7,
@@ -81,11 +91,16 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
     });
 
     return () => circle.setMap(null);
-  }, [circleCenter, map]);
+  }, [circleCenter, map, searchRadius]);
+
+  useEffect(() => {
+    if (circleCenter) {
+      fetchNearbyPlaces(circleCenter);
+    }
+  }, [searchRadius]);
 
   return (
     <>
-      {/* Markers for buildings */}
       {buildings.map((building) => (
         <Marker
           key={building._id}
@@ -104,7 +119,6 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
         />
       ))}
 
-      {/* InfoWindow for selected building */}
       {selectedBuilding && (
         <InfoWindow
           position={{
@@ -167,7 +181,6 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
         </InfoWindow>
       )}
 
-      {/* Markers for places */}
       {places.map((place) => {
         const type = place.types?.find((t) =>
           ["restaurant", "gym", "pharmacy"].includes(t)
@@ -196,7 +209,24 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
         );
       })}
 
-      {/* Tailwind-styled Legend */}
+      {/* Radius slider */}
+      <div className="absolute top-28 left-4 z-50 bg-white border rounded shadow px-4 py-2 text-sm w-64">
+        <label htmlFor="radius" className="block font-medium mb-1">
+          Search Radius: {searchRadius}m
+        </label>
+        <input
+          id="radius"
+          type="range"
+          min={200}
+          max={500}
+          step={50}
+          value={searchRadius}
+          onChange={(e) => setSearchRadius(Number(e.target.value))}
+          className="w-full cursor-pointer"
+        />
+      </div>
+
+      {/* Legend */}
       <div className="absolute bottom-4 left-4 z-50 bg-white rounded shadow-lg p-4 text-sm space-y-2 border border-gray-200">
         <div className="font-semibold mb-1">Legend</div>
         <div className="flex items-center space-x-2">
