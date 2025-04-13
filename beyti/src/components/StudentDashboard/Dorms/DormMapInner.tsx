@@ -45,7 +45,7 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
     if (!map) return;
 
     const service = new google.maps.places.PlacesService(map);
-    const types = ["restaurant", "gym", "pharmacy"] as const;
+    const types = ["restaurant", "gym", "pharmacy", "cafe"] as const;
     const allPlaces: google.maps.places.PlaceResult[] = [];
 
     let completed = 0;
@@ -183,15 +183,17 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
 
       {places.map((place) => {
         const type = place.types?.find((t) =>
-          ["restaurant", "gym", "pharmacy"].includes(t)
-        ) as "restaurant" | "gym" | "pharmacy" | undefined;
+          ["restaurant", "gym", "pharmacy", "cafe"].includes(t)
+        ) as "restaurant" | "gym" | "pharmacy" | "cafe" | undefined;
 
         const iconUrl =
           type === "gym"
-            ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+            ? "/icons/gym.png"
             : type === "pharmacy"
-            ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+            ? "/icons/pharmacy.png"
+            : type === "cafe"
+            ? "/icons/cafe.png"
+            : "/icons/restraunt.png";
 
         return (
           <Marker
@@ -231,7 +233,7 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
         <div className="font-semibold mb-1">Legend</div>
         <div className="flex items-center space-x-2">
           <Image
-            src="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+            src="/icons/restraunt.png"
             alt="Restaurant"
             width={16}
             height={16}
@@ -239,22 +241,26 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
           <span>Restaurant</span>
         </div>
         <div className="flex items-center space-x-2">
-          <Image
-            src="http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-            alt="Gym"
-            width={16}
-            height={16}
-          />
+          <Image src="/icons/gym.png" alt="Gym" width={16} height={16} />
           <span>Gym</span>
         </div>
         <div className="flex items-center space-x-2">
           <Image
-            src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            src="/icons/pharmacy.png"
             alt="Pharmacy"
             width={16}
             height={16}
           />
           <span>Pharmacy</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Image
+            src="/icons/cafe.png"
+            alt="Coffee Shop"
+            width={16}
+            height={16}
+          />
+          <span>Coffee Shop</span>
         </div>
       </div>
     </>
