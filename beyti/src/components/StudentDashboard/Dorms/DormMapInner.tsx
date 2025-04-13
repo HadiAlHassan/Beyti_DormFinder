@@ -41,39 +41,10 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
   const [searchRadius, setSearchRadius] = useState(200);
   const router = useRouter();
 
-  const fetchNearbyPlaces = (center: { lat: number; lng: number }) => {
-    if (!map) return;
-
-    const service = new google.maps.places.PlacesService(map);
-    const types = ["restaurant", "gym", "pharmacy", "cafe"] as const;
-    const allPlaces: google.maps.places.PlaceResult[] = [];
-
-    let completed = 0;
-    types.forEach((type) => {
-      service.nearbySearch(
-        {
-          location: center,
-          radius: searchRadius,
-          type,
-        },
-        (results, status) => {
-          completed++;
-          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            allPlaces.push(...results);
-          }
-          if (completed === types.length) {
-            setPlaces(allPlaces);
-          }
-        }
-      );
-    });
-  };
-
   const showRadar = (center: { lat: number; lng: number }) => {
     setSelectedBuilding(null);
     setPlaces([]);
     setCircleCenter(center);
-    fetchNearbyPlaces(center);
   };
 
   useEffect(() => {
@@ -90,14 +61,32 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
       map,
     });
 
+    const service = new google.maps.places.PlacesService(map);
+    const types = ["restaurant", "gym", "pharmacy", "cafe"] as const;
+    const allPlaces: google.maps.places.PlaceResult[] = [];
+
+    let completed = 0;
+    types.forEach((type) => {
+      service.nearbySearch(
+        {
+          location: circleCenter,
+          radius: searchRadius,
+          type,
+        },
+        (results, status) => {
+          completed++;
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            allPlaces.push(...results);
+          }
+          if (completed === types.length) {
+            setPlaces(allPlaces);
+          }
+        }
+      );
+    });
+
     return () => circle.setMap(null);
   }, [circleCenter, map, searchRadius]);
-
-  useEffect(() => {
-    if (circleCenter) {
-      fetchNearbyPlaces(circleCenter);
-    }
-  }, [searchRadius]);
 
   return (
     <>
