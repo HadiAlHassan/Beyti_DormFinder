@@ -11,10 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
-import { cancelStudentBooking } from "@/utils/bookingAPIStudentView";
 
 interface Props {
-  booking: any; // You can replace 'any' with a Booking type if available
+  booking: any;
   onCancel: (id: string) => void;
 }
 
@@ -22,6 +21,9 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
   const { toast } = useToast();
 
   const apartment = booking.apartmentId;
+  const building = booking.buildingId;
+  const dormOwner = booking.dormOwnerId;
+
   const images =
     apartment?.pictures?.map((pic: any) => ({
       src: `data:${pic.contentType};base64,${Buffer.from(
@@ -30,13 +32,15 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
     })) ?? [];
 
   return (
-    <Card className="w-full overflow-hidden shadow">
-      <CardHeader>
-        <CardTitle>{apartment?.name}</CardTitle>
+    <Card className="w-full overflow-hidden shadow rounded-xl">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold">
+          Apartment: {apartment?.name}
+        </CardTitle>
         <p className="text-sm text-muted-foreground">
           💰 ${apartment?.pricePerMonth}/month
         </p>
-        <p className="text-sm text-muted-foreground">
+        <div className="text-sm mt-1 text-muted-foreground">
           Status:{" "}
           <Badge
             className={
@@ -52,21 +56,41 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
           >
             {booking.status}
           </Badge>
-        </p>
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-2">
-        <div className="flex flex-wrap gap-2">
-          {apartment?.amenities?.map((am: string, idx: number) => (
-            <Badge key={idx} variant="secondary">
-              {am}
-            </Badge>
-          ))}
+      <CardContent className="space-y-3 text-sm pt-0">
+        {/* Building Info */}
+        <div className="bg-muted/40 rounded-md p-2">
+          <h4 className="text-sm font-medium text-primary">🏢 Building</h4>
+          <p><strong>Name:</strong> {building?.name}</p>
+          <p><strong>Address:</strong> {building?.address}</p>
+        </div>
+
+        {/* Apartment Info */}
+        <div className="bg-muted/40 rounded-md p-2">
+          <h4 className="text-sm font-medium text-primary">🛏️ Apartment</h4>
+          <p><strong>Capacity:</strong> {apartment?.capacity}</p>
+          <p><strong>Available:</strong> {apartment?.availableSpots}</p>
+          <div className="flex flex-wrap gap-1 pt-1">
+            {apartment?.amenities?.map((am: string, idx: number) => (
+              <Badge key={idx} variant="secondary" className="text-xs px-2 py-0.5">
+                {am}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* Dorm Owner Info */}
+        <div className="bg-muted/40 rounded-md p-2">
+          <h4 className="text-sm font-medium text-primary">👤 Dorm Owner</h4>
+          <p><strong>Name:</strong> {dormOwner?.first_name} {dormOwner?.last_name}</p>
+          <p><strong>Phone:</strong> {dormOwner?.phone_number}</p>
         </div>
       </CardContent>
 
-      {booking.status === "pending" && (
-        <CardFooter className="flex justify-end">
+      {(booking.status === "pending" || booking.status === "approved") && (
+        <CardFooter className="flex justify-end pt-2">
           <Button
             size="sm"
             variant="destructive"
