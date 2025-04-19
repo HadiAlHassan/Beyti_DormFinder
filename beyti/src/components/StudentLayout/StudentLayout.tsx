@@ -14,51 +14,15 @@ import ProtectedLayout from "../ProtectLayout";
 import { UserProvider } from "@/context/UserContext";
 import { DormDataProvider } from "@/context/DormContext";
 import { ApartmentProvider } from "@/context/ApartmentsContext";
-import { useEffect, useState } from "react";
-import { getCookie } from "@/utils/cookieUtils";
+import { useBookingCheck } from "@/hooks/useBookingCheck";
+
 
 export default function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [hasCurrentDorm, setHasCurrentDorm] = useState(false);
-
-  useEffect(() => {
-    const checkActiveBooking = async () => {
-      const { userId, token } = getCookie();
-      if (!userId || !token) return;
-
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/active/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (res.ok) {
-          const result = await res.json();
-          console.log("Active booking result:", result);
-          if (result && result.checkInDate && result.checkOutDate) {
-            const now = new Date();
-            const checkIn = new Date(result.checkInDate);
-            const checkOut = new Date(result.checkOutDate);
-
-            if (now >= checkIn && now <= checkOut) {
-              setHasCurrentDorm(true);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error checking active booking:", err);
-      }
-    };
-
-    checkActiveBooking();
-  }, []);
+  const hasCurrentDorm = useBookingCheck();
 
   return (
     <ProtectedLayout allowedRole="student" redirectTo="/">
@@ -106,15 +70,22 @@ export default function StudentLayout({
                         My Bookings
                       </Link>
 
-                      {hasCurrentDorm && (
-                        <Link
-                          href="/student/rent"
-                          className="flex items-center p-3 hover:bg-gray-100"
-                        >
-                          <Building2 className="mr-2 h-5 w-5" />
-                          My Dorm
-                        </Link>
-                      )}
+                      <Link
+                        href={hasCurrentDorm ? "/student/rent" : "#"}
+                        className={`flex items-center p-3 ${
+                          hasCurrentDorm
+                            ? "hover:bg-gray-100"
+                            : "cursor-not-allowed text-gray-400 pointer-events-none"
+                        }`}
+                        title={
+                          hasCurrentDorm
+                            ? "Go to your current dorm"
+                            : "You don't have an active dorm yet"
+                        }
+                      >
+                        <Building2 className="mr-2 h-5 w-5" />
+                        My Dorm
+                      </Link>
                     </SidebarGroup>
                   </SidebarContent>
 
