@@ -10,15 +10,27 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import Image from "next/image";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Props {
   booking: any;
-  onCancel: (id: string) => void;
+  onCancel: (id: string, message: string) => void;
 }
 
 const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
+  const [showCancelMessage, setShowCancelMessage] = useState(false);
   const { toast } = useToast();
+  const [showMessage, setShowMessage] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState("");
 
   const apartment = booking.apartmentId;
   const building = booking.buildingId;
@@ -94,12 +106,104 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => onCancel(booking._id)}
+            onClick={() => setShowCancelModal(true)}
           >
             Cancel
           </Button>
         </CardFooter>
       )}
+        {booking.status === "cancelled" && booking.cancellationMessage && (
+        <CardFooter className="flex justify-end pt-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowCancelMessage(true)}
+          >
+            Show Cancel Message
+          </Button>
+        </CardFooter>
+      )}
+
+      {booking.status === "rejected" && booking.rejectionMessage && (
+  <CardFooter className="flex justify-end pt-2">
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => setShowMessage(true)}
+    >
+      Show Message
+    </Button>
+  </CardFooter>
+)}
+      <Dialog open={showMessage} onOpenChange={() => setShowMessage(false)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Rejection Message</DialogTitle>
+      <DialogDescription>
+        This is the reason your booking was rejected:
+      </DialogDescription>
+    </DialogHeader>
+    <p className="text-sm text-muted-foreground whitespace-pre-line">
+      {booking.rejectionMessage}
+    </p>
+    <DialogFooter>
+      <Button onClick={() => setShowMessage(false)}>Close</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+<Dialog open={showCancelModal} onOpenChange={() => setShowCancelModal(false)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancel Booking</DialogTitle>
+      <DialogDescription>
+        Please let the landlord know why you're cancelling this booking.
+      </DialogDescription>
+    </DialogHeader>
+
+    <textarea
+      className="w-full rounded-md border border-input p-2 text-sm"
+      rows={4}
+      placeholder="e.g., I found another place closer to campus."
+      value={cancelMessage}
+      onChange={(e) => setCancelMessage(e.target.value)}
+    />
+
+    <DialogFooter className="pt-4">
+      <Button variant="ghost" onClick={() => setShowCancelModal(false)}>
+        Back
+      </Button>
+      <Button
+  onClick={() => {
+    console.log("🛑 Cancelling booking:", booking._id);
+    console.log("📝 Message:", cancelMessage);
+    onCancel(booking._id, cancelMessage);
+    setShowCancelModal(false);
+    setCancelMessage("");
+  }}
+>
+  Confirm Cancel
+</Button>
+
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+<Dialog open={showCancelMessage} onOpenChange={() => setShowCancelMessage(false)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancellation Message</DialogTitle>
+      <DialogDescription>
+        This is the reason you gave when cancelling this booking.
+      </DialogDescription>
+    </DialogHeader>
+    <p className="text-sm text-muted-foreground whitespace-pre-line">
+      {booking.cancellationMessage}
+    </p>
+    <DialogFooter>
+      <Button onClick={() => setShowCancelMessage(false)}>Close</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </Card>
   );
 };

@@ -23,7 +23,7 @@ export async function getBookingsByDormOwner() {
   return await res.json();
 }
 
-export async function updateBookingStatus(bookingId: string, status: string) {
+export async function updateBookingStatus(bookingId: string, status: string, message?: string) {
     const { token } = getCookie();
     if (!token) throw new Error("Missing token");
   
@@ -33,6 +33,7 @@ export async function updateBookingStatus(bookingId: string, status: string) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({ message }), // send the message
     });
   
     if (!res.ok) {
