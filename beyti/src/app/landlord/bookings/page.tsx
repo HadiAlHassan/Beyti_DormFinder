@@ -8,12 +8,35 @@ import { UserProfile } from "@/utils/FetchUserAPI";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import RejectWithMessageModal from "@/components/LandLordDashboad/RejectWithMessageModal";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const statusOrder = ["pending", "approved", "rejected", "cancelled"];
 
 export default function LandlordBookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [viewingStudent, setViewingStudent] = useState<UserProfile | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const handleRejectWithMessage = (bookingId: string) => {
+    setRejectingId(bookingId);
+    setShowModal(true);
+  };
+  const [viewMessage, setViewMessage] = useState<string | null>(null);
+  const [viewCancelMessage, setViewCancelMessage] = useState<string | null>(null);
+
+  const confirmRejection = async (message: string) => {
+    if (!rejectingId) return;
+  
+    try {
+      await updateBookingStatus(rejectingId, "rejected", message);
+      const refreshed = await getBookingsByDormOwner();
+      setBookings(refreshed);
+    } catch (err) {
+      console.error("❌ Failed to reject with message:", err);
+    }
+  };
+  
 
   useEffect(() => {
     getBookingsByDormOwner()
@@ -21,6 +44,7 @@ export default function LandlordBookingsPage() {
         console.log("📦 bookings fetched:", bookings);
         if (Array.isArray(bookings)) setBookings(bookings);
         else setBookings([]);
+        console.log(bookings)
       })
       .catch((err) => {
         console.error("❌ Failed to fetch bookings:", err);
@@ -112,7 +136,7 @@ export default function LandlordBookingsPage() {
                       />
                     </CardContent>
 
-                    {(status === "pending" || status === "approved" || status === "rejected") && (
+                    {(status === "pending" || status === "approved" || status === "rejected" || status === "cancelled") && (
                       <CardFooter className="flex justify-end gap-2">
                         {status === "pending" && (
                           <>
@@ -125,29 +149,55 @@ export default function LandlordBookingsPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => handleStatusUpdate(booking._id, "rejected")}
+                              onClick={() => handleRejectWithMessage(booking._id)}
                             >
                               Reject
                             </Button>
+
                           </>
                         )}
                         {status === "approved" && (
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleStatusUpdate(booking._id, "rejected")}
-                          >
+                            onClick={() => handleRejectWithMessage(booking._id)}
+                            >
                             Reject
                           </Button>
+
                         )}
-                        {status === "rejected" && (
+                        {status === "cancelled" && booking.cancellationMessage && (
                           <Button
                             size="sm"
-                            onClick={() => handleStatusUpdate(booking._id, "approved")}
+                            variant="outline"
+                            onClick={() => setViewCancelMessage(booking.cancellationMessage)}
                           >
-                            Approve
+                            View Cancel Message
                           </Button>
                         )}
+
+                        {status === "rejected" && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleStatusUpdate(booking._id, "approved")}
+                            >
+                              Approve
+                            </Button>
+
+                            {booking.rejectionMessage && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setViewMessage(booking.rejectionMessage)}
+                              >
+                                View Message
+                              </Button>
+                            )}
+                          </div>
+
+                        )}
+                        
                       </CardFooter>
                     )}
                   </Card>
@@ -157,6 +207,30 @@ export default function LandlordBookingsPage() {
           </div>
         ))
       )}
+      <RejectWithMessageModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={confirmRejection}
+      />
+      <Dialog open={!!viewMessage} onOpenChange={() => setViewMessage(null)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Rejection Message</DialogTitle>
+      <DialogDescription>
+        This is the message the student received:
+      </DialogDescription>
+    </DialogHeader>
+    <p className="text-sm text-muted-foreground whitespace-pre-line">
+      {viewMessage}
+    </p>
+    <DialogFooter>
+      <Button onClick={() => setViewMessage(null)}>Close</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
+    
+    
   );
 }

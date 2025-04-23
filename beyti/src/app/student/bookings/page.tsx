@@ -29,9 +29,10 @@ export default function MyBookingsPage() {
       });
   }, []);
 
-  const handleCancel = async (id: string) => {
+  const handleCancel = async (id: string, message: string) => {
+    console.log("🚀 Sending cancel with message:", message);
     try {
-      const updated = await cancelStudentBooking(id);
+      const updated = await cancelStudentBooking(id, message); // ✅ Fixed
       toast("Booking Cancelled", {
         description: "Your booking was successfully cancelled.",
       });
@@ -44,7 +45,7 @@ export default function MyBookingsPage() {
         description: "Failed to cancel the booking. Please try again.",
       });
     }
-  };
+  };  
 
   const grouped = bookings.reduce((acc, booking) => {
     const status = booking.status || "unknown";
@@ -75,7 +76,7 @@ export default function MyBookingsPage() {
                 <StudentBookingCard
                   key={booking._id}
                   booking={booking}
-                  onCancel={() => handleCancel(booking._id)}
+                  onCancel={handleCancel}
                 />
               ))}
             </div>

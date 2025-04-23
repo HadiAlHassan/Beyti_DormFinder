@@ -16,13 +16,15 @@ export async function   getStudentBookings() {
   return data;
 }
 
-export async function cancelStudentBooking(id: string) {
+export async function cancelStudentBooking(id: string, message: string) {
   const { token } = getCookie();
   if (!token) throw new Error("Missing token");
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}/cancel`, {
     method: "PUT",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ message }),
   });
 
   if (!res.ok) {
