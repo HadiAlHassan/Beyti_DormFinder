@@ -39,7 +39,9 @@ interface Building {
 
 interface BuildingCardProps {
   building: Building;
+  refetchBuildings?: () => Promise<void>; // ✅ Optional prop
 }
+
 
 const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
   const router = useRouter();

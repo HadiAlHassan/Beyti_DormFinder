@@ -1,13 +1,16 @@
 "use client";
 
 import MyProperties from "@/components/LandLordDashboad/MyProperties/MyProperties";
-//import { getCookie } from "@/utils/cookieUtils";
+import { BuildingsProvider } from "@/context/BuildingsContext";
 
 export default function Page() {
 
-  return <>
-  
-  <br />
-  <MyProperties/>
-  </>;
+  return (
+    <>
+      <br />
+      <BuildingsProvider>
+        <MyProperties />
+      </BuildingsProvider>
+    </>
+  );
 }

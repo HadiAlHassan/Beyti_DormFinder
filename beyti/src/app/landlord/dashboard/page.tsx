@@ -24,7 +24,8 @@ const LandlordProfile = () => {
 
   return (
     <>
-      <LandLordDashBoard/>
+      <LandLordDashBoard />
+
     </>
   );
 };
