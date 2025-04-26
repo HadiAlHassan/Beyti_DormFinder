@@ -9,7 +9,14 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { Home, Building, ClipboardList, User, LogOut } from "lucide-react"; // Icons
+import {
+  Home,
+  Building,
+  ClipboardList,
+  User,
+  LogOut,
+  CreditCard,
+} from "lucide-react"; // Icons
 import ProtectedLayout from "../ProtectLayout";
 
 
@@ -64,6 +71,14 @@ export default function LandLordLayout({
             </SidebarContent>
 
             <SidebarFooter>
+              <Link
+                href="/landlord/wallet"
+                className="flex items-center p-3 hover:bg-gray-100"
+              >
+                <CreditCard className="mr-2 h-5 w-5" />
+                Wallet
+              </Link>
+
               <Link
                 href="/"
                 className="flex items-center p-3 hover:bg-gray-100"

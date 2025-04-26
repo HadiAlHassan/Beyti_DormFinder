@@ -29,3 +29,24 @@ export async function getStudentRentPayments(): Promise<RentPayment[]> {
 
   return await res.json();
 }
+
+export const payRentWithWallet = async (paymentId: string) => {
+  const { token, role } = getCookie();
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/wallet/pay/${paymentId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(role ? { "x-user-role": role } : {}),
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to pay rent with wallet");
+  }
+
+  return res.json();
+};

@@ -16,7 +16,13 @@ interface Payment {
   landlordConfirmed: boolean;
 }
 
-export default function StudentPayments() {
+interface StudentPaymentsProps {
+  onPayNowClick: (paymentId: string) => void; // 🆕 accept this prop
+}
+
+export default function StudentPayments({
+  onPayNowClick,
+}: StudentPaymentsProps) {
   const { userId, token } = getCookie();
   const [payments, setPayments] = useState<Payment[]>([]);
 
@@ -24,7 +30,7 @@ export default function StudentPayments() {
     const fetchPayments = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/rent-payments/student/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/rent-payments/student/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -40,36 +46,6 @@ export default function StudentPayments() {
 
     fetchPayments();
   }, [userId, token]);
-
-  const payOnline = async (paymentId: string) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/pay-online/${paymentId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error("Payment failed");
-
-      alert("✅ Payment successful!");
-
-      // Update UI
-      setPayments((prev) =>
-        prev.map((p) =>
-          p._id === paymentId
-            ? { ...p, status: "paid", paymentMethod: "online" }
-            : p
-        )
-      );
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      alert("❌ Payment failed. Please try again.");
-    }
-  };
 
   const getStatusColor = (status: string) => {
     if (status === "paid") return "bg-green-500 text-white";
@@ -97,7 +73,11 @@ export default function StudentPayments() {
 
               {/* Show Pay Now button if unpaid */}
               {(p.status === "unpaid" || p.status === "pending") && (
-                <Button size="sm" onClick={() => payOnline(p._id)}>
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => onPayNowClick(p._id)}
+                >
                   Pay Now
                 </Button>
               )}

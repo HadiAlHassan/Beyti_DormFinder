@@ -9,12 +9,13 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { Home, Book, User, LogOut, Compass, Building2 } from "lucide-react";
+import { Home, Book, User, LogOut, Compass, Building2,CreditCard } from "lucide-react";
 import ProtectedLayout from "../ProtectLayout";
 import { UserProvider } from "@/context/UserContext";
 import { DormDataProvider } from "@/context/DormContext";
 import { ApartmentProvider } from "@/context/ApartmentsContext";
 import { useBookingCheck } from "@/hooks/useBookingCheck";
+
 
 
 export default function StudentLayout({
@@ -90,6 +91,14 @@ export default function StudentLayout({
                   </SidebarContent>
 
                   <SidebarFooter>
+                    <Link
+                      href="/student/my-billing"
+                      className="flex items-center p-3 hover:bg-gray-100"
+                    >
+                      <CreditCard className="h-5 w-5" />
+                      My Billing
+                    </Link>
+
                     <Link
                       href="/"
                       className="flex items-center p-3 hover:bg-gray-100"
