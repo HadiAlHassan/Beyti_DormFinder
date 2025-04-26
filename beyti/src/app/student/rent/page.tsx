@@ -174,7 +174,7 @@ export default function RentPage() {
         <div className="text-gray-500">No rent payments found.</div>
       )}
 
-      {/* 🔹 Ticket history */}
+      {/* Ticket history */}
       <TicketHistory />
     </div>
   );

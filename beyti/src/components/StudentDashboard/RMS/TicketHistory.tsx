@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { getCookie } from "@/utils/cookieUtils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+interface Reply {
+  sender: "student" | "landlord";
+  message: string;
+  timestamp: string;
+}
 
 interface Ticket {
   _id: string;
@@ -12,6 +18,7 @@ interface Ticket {
   status: "open" | "in progress" | "resolved";
   dorm: { name: string };
   updatedAt: string;
+  replies?: Reply[]; // ✅ Add replies
 }
 
 export default function TicketHistory() {
@@ -23,7 +30,7 @@ export default function TicketHistory() {
     async function fetchTickets() {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/student/tickets/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/student/tickets/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -57,16 +64,44 @@ export default function TicketHistory() {
       ) : tickets?.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tickets.map((ticket) => (
-            <Card key={ticket._id}>
-              <CardContent className="p-4 space-y-1">
-                <div className="text-lg font-medium">{ticket.title}</div>
+            <Card key={ticket._id} className="shadow">
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  {ticket.title}
+                  <Badge className={statusColor(ticket.status)}>
+                    {ticket.status.toUpperCase()}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {ticket.description}
+                </p>
 
-                <Badge className={statusColor(ticket.status)}>
-                  {ticket.status.toUpperCase()}
-                </Badge>
                 <div className="text-xs text-right text-muted-foreground">
                   Updated: {new Date(ticket.updatedAt).toLocaleString()}
                 </div>
+
+                {/* Replies Section */}
+                {ticket.replies && ticket.replies.length > 0 && (
+                  <div className="pt-3 space-y-2">
+                    <h4 className="text-sm font-semibold">Replies:</h4>
+                    {ticket.replies.map((reply, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-2 rounded-md ${
+                          reply.sender === "landlord"
+                            ? "bg-blue-100"
+                            : "bg-muted"
+                        }`}
+                      >
+                        <p className="text-sm">
+                          <strong>{reply.message}</strong>{" "}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
