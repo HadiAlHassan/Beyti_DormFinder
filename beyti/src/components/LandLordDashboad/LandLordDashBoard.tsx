@@ -11,12 +11,15 @@ export function LandLordDashBoard() {
       <div className="p-4 m-2 text-primary text-2xl">Monthly Dashboard</div>
 
       <div className="m-4 p-5">
+        <LandlordPayments />
+      </div>
+
+      
+      <div className="m-4 p-5">
         <MaintenanceTickets />
       </div>
 
-      <div className="m-4 p-5">
-        <LandlordPayments />
-      </div>
+
     </BuildingsProvider>
   );
 }
