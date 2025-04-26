@@ -21,6 +21,7 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
 }) => {
   const { userId: studentId } = getCookie();
   if (!studentId) return null;
+
   const { apartmentsByBuilding, loading, error } = useApartmentData();
   const [selectedApartment, setSelectedApartment] = useState<any | null>(null);
   const apartments = apartmentsByBuilding?.[buildingId] || [];
@@ -30,7 +31,9 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
   }
 
   if (error) {
-    return <p className="p-6 text-red-500">Error loading apartments: {error}</p>;
+    return (
+      <p className="p-6 text-red-500">Error loading apartments: {error}</p>
+    );
   }
 
   return (
@@ -51,8 +54,15 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
             <ApartmentCard
               key={apt._id}
               apartment={{
-                ...apt,
-                amenities: apt.amenities ?? [], // ✅ ensure amenities is always an array
+                _id: apt._id,
+                name: apt.name,
+                pricePerMonth: apt.pricePerMonth,
+                depositAmount: apt.depositAmount ?? 0, // ✅ Added this
+                capacity: apt.capacity,
+                availableSpots: apt.availableSpots,
+                isBooked: apt.isBooked,
+                amenities: apt.amenities ?? [],
+                pictures: apt.pictures, // optional
               }}
               onView={() => setSelectedApartment(apt)}
               onEdit={() => console.log("Edit", apt._id)}
@@ -67,6 +77,7 @@ const BuildingViewer: React.FC<BuildingViewerProps> = ({
           apartment={{
             _id: selectedApartment._id,
             pricePerMonth: selectedApartment.pricePerMonth,
+            depositAmount: selectedApartment.depositAmount, // ✅ FIXED: now passed correctly
             dormOwnerId: selectedApartment.dormOwner,
             buildingId: selectedApartment.building,
           }}

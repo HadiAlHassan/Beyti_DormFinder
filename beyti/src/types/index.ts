@@ -2,6 +2,7 @@ export interface Apartment {
   _id: string;
   name: string;
   pricePerMonth: number;
+   depositAmount: number;
   capacity: number;
   amenities: string[];
   availableSpots: number;
@@ -27,14 +28,31 @@ export interface Building {
     otherPolicies?: string;
   };
 }
-
 export interface MaintenanceTicket {
   _id: string;
   title: string;
   description: string;
   status: "open" | "in progress" | "resolved";
-  picture?: {
+  pictures?: {
     data: string;
     contentType: string;
+  }[];
+  student?: {
+    _id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
   };
+  dorm?: {
+    _id: string;
+    name: string;
+    address: string;
+  };
+  dormOwnerId: string;
+  replies?: {
+    sender: "student" | "landlord";
+    message: string;
+    timestamp: string; // or Date, depending how you parse it
+  }[];
 }
+

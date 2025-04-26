@@ -12,7 +12,7 @@ export const setCookie = (name: string, value: string, minutesToExpire: number, 
     let token: string | null = null;
     let role: string | null = null;
     let userId: string | null = null;
-    for (let cookie of cookies) {
+    for (const cookie of cookies) {
       const [key, value] = cookie.split("=");
       if (key === "authToken") {
         token = decodeURIComponent(value);

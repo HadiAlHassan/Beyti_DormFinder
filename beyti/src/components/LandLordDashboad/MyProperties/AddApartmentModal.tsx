@@ -11,21 +11,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { getPublicBuildings, createApartment } from "@/utils/BuildingAPI";
 
-const AVAILABLE_AMENITIES = ["Wifi", "Electricity", "Water", "Gas", "Room Service"];
+const AVAILABLE_AMENITIES = [
+  "Wifi",
+  "Electricity",
+  "Water",
+  "Gas",
+  "Room Service",
+];
 
 interface AddApartmentModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
+  buildingId?: string; // 🆕 optional buildingId
 }
 
 interface ApartmentFormData {
   name: string;
   description: string;
   pricePerMonth: string;
+  depositAmount: string;
   capacity: string;
   availableSpots: string;
   amenities: string[];
@@ -36,12 +50,16 @@ interface ApartmentFormData {
 const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
   isOpen,
   setIsOpen,
+  buildingId,
 }) => {
-  const [buildings, setBuildings] = useState<{ _id: string; name: string }[]>([]);
+  const [buildings, setBuildings] = useState<{ _id: string; name: string }[]>(
+    []
+  );
   const [formData, setFormData] = useState<ApartmentFormData>({
     name: "",
     description: "",
     pricePerMonth: "",
+    depositAmount: "",
     capacity: "",
     availableSpots: "",
     amenities: [],
@@ -51,13 +69,17 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      getPublicBuildings()
-        .then((data) => setBuildings(data))
-        .catch((err) => {
-          console.error("Failed to load buildings:", err);
-        });
+      if (buildingId) {
+        setFormData((prev) => ({ ...prev, buildingId }));
+      } else {
+        getPublicBuildings()
+          .then((data) => setBuildings(data))
+          .catch((err) => {
+            console.error("Failed to load buildings:", err);
+          });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, buildingId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -80,6 +102,7 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         name: formData.name,
         description: formData.description,
         pricePerMonth: Number(formData.pricePerMonth),
+        depositAmount: Number(formData.depositAmount),
         capacity: Number(formData.capacity),
         availableSpots: Number(formData.availableSpots),
         amenities: formData.amenities,
@@ -91,6 +114,7 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         name: "",
         description: "",
         pricePerMonth: "",
+        depositAmount: "",
         capacity: "",
         availableSpots: "",
         amenities: [],
@@ -110,26 +134,29 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div>
-            <Label>Select Building</Label>
-            <Select
-              value={formData.buildingId}
-              onValueChange={(value) =>
-                setFormData({ ...formData, buildingId: value })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a public building..." />
-              </SelectTrigger>
-              <SelectContent>
-                {buildings.map((b) => (
-                  <SelectItem key={b._id} value={b._id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* 🧠 Only show selector if NO buildingId passed */}
+          {!buildingId && (
+            <div>
+              <Label>Select Building</Label>
+              <Select
+                value={formData.buildingId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, buildingId: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a public building..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {buildings.map((b) => (
+                    <SelectItem key={b._id} value={b._id}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <Input
             placeholder="Apartment Name"
@@ -149,6 +176,14 @@ const AddApartmentModal: React.FC<AddApartmentModalProps> = ({
             value={formData.pricePerMonth}
             onChange={(e) =>
               setFormData({ ...formData, pricePerMonth: e.target.value })
+            }
+          />
+          <Input
+            type="number"
+            placeholder="Deposit Amount"
+            value={formData.depositAmount}
+            onChange={(e) =>
+              setFormData({ ...formData, depositAmount: e.target.value })
             }
           />
           <Input

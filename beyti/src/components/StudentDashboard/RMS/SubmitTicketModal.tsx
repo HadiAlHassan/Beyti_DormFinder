@@ -11,14 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { getCookie } from "@/utils/cookieUtils";
 
 export default function SubmitTicketModal({
   dormId,
   studentId,
+  landlordId,
   onSuccess,
 }: {
   dormId: string;
   studentId: string;
+  landlordId: string;
   onSuccess?: () => void;
 }) {
   const [title, setTitle] = useState("");
@@ -35,11 +38,16 @@ export default function SubmitTicketModal({
     formData.append("description", description);
     formData.append("studentId", studentId);
     formData.append("dormId", dormId);
+formData.append("dormOwnerId", landlordId);
     if (file) formData.append("picture", file);
 
     try {
+      const {token} = getCookie();
       const res = await fetch("http://localhost:5000/api/student/tickets", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
@@ -51,7 +59,7 @@ export default function SubmitTicketModal({
       onSuccess?.();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      alert("Something went wrong.");
+      alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

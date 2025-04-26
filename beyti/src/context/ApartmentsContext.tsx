@@ -4,22 +4,24 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getCookie } from "@/utils/cookieUtils";
 
-interface Apartment {
+export interface Apartment {
   _id: string;
   name: string;
-  description?: string;
+  description?: string; // 🆕 added optional
   pricePerMonth: number;
+  depositAmount: number; // 🆕 added
   capacity: number;
   availableSpots: number;
   isBooked: boolean;
-  amenities?: string[];
+  amenities: string[];
   pictures?: {
     data: { type: "Buffer"; data: number[] };
     contentType: string;
-  }[];
-  dormOwner: string;
-  building: string;
+  }[]; // optional
+  dormOwner: string; // you probably already have this
+  building: string; // you probably already have this
 }
+
 
 interface ApartmentContextType {
   apartmentsByBuilding: Record<string, Apartment[]> | null;
@@ -49,6 +51,7 @@ export const ApartmentProvider = ({ children }: { children: React.ReactNode }) =
         const data = await res.json();
         setApartmentsByBuilding(data);
         console.log(data);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError("Failed to fetch apartments");
       } finally {

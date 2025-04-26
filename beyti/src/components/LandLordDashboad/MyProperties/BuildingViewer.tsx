@@ -13,6 +13,7 @@ interface Apartment {
   name: string;
   description?: string;
   pricePerMonth: number;
+  depositAmount: number; // 🆕 Added this!
   capacity: number;
   availableSpots: number;
   isBooked: boolean;

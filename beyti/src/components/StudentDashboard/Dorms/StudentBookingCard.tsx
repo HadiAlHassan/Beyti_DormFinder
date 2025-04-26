@@ -37,6 +37,7 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
   const dormOwner = booking.dormOwnerId;
 
   const images =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     apartment?.pictures?.map((pic: any) => ({
       src: `data:${pic.contentType};base64,${Buffer.from(
         pic.data.data
@@ -75,18 +76,30 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
         {/* Building Info */}
         <div className="bg-muted/40 rounded-md p-2">
           <h4 className="text-sm font-medium text-primary">🏢 Building</h4>
-          <p><strong>Name:</strong> {building?.name}</p>
-          <p><strong>Address:</strong> {building?.address}</p>
+          <p>
+            <strong>Name:</strong> {building?.name}
+          </p>
+          <p>
+            <strong>Address:</strong> {building?.address}
+          </p>
         </div>
 
         {/* Apartment Info */}
         <div className="bg-muted/40 rounded-md p-2">
           <h4 className="text-sm font-medium text-primary">🛏️ Apartment</h4>
-          <p><strong>Capacity:</strong> {apartment?.capacity}</p>
-          <p><strong>Available:</strong> {apartment?.availableSpots}</p>
+          <p>
+            <strong>Capacity:</strong> {apartment?.capacity}
+          </p>
+          <p>
+            <strong>Available:</strong> {apartment?.availableSpots}
+          </p>
           <div className="flex flex-wrap gap-1 pt-1">
             {apartment?.amenities?.map((am: string, idx: number) => (
-              <Badge key={idx} variant="secondary" className="text-xs px-2 py-0.5">
+              <Badge
+                key={idx}
+                variant="secondary"
+                className="text-xs px-2 py-0.5"
+              >
                 {am}
               </Badge>
             ))}
@@ -96,11 +109,17 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
         {/* Dorm Owner Info */}
         <div className="bg-muted/40 rounded-md p-2">
           <h4 className="text-sm font-medium text-primary">👤 Dorm Owner</h4>
-          <p><strong>Name:</strong> {dormOwner?.first_name} {dormOwner?.last_name}</p>
-          <p><strong>Phone:</strong> {dormOwner?.phone_number}</p>
+          <p>
+            <strong>Name:</strong> {dormOwner?.first_name}{" "}
+            {dormOwner?.last_name}
+          </p>
+          <p>
+            <strong>Phone:</strong> {dormOwner?.phone_number}
+          </p>
         </div>
       </CardContent>
 
+      {/* Cancel Button if pending or approved */}
       {(booking.status === "pending" || booking.status === "approved") && (
         <CardFooter className="flex justify-end pt-2">
           <Button
@@ -112,7 +131,9 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
           </Button>
         </CardFooter>
       )}
-        {booking.status === "cancelled" && booking.cancellationMessage && (
+
+      {/* Show Cancel Message if booking is cancelled */}
+      {booking.status === "cancelled" && booking.cancellationMessage && (
         <CardFooter className="flex justify-end pt-2">
           <Button
             size="sm"
@@ -124,86 +145,102 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
         </CardFooter>
       )}
 
+      {/* Show Rejection Message if booking is rejected */}
       {booking.status === "rejected" && booking.rejectionMessage && (
-  <CardFooter className="flex justify-end pt-2">
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={() => setShowMessage(true)}
-    >
-      Show Message
-    </Button>
-  </CardFooter>
-)}
+        <CardFooter className="flex justify-end pt-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowMessage(true)}
+          >
+            Show Message
+          </Button>
+        </CardFooter>
+      )}
+
+      {/* Dialog: Show Rejection Message */}
       <Dialog open={showMessage} onOpenChange={() => setShowMessage(false)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Rejection Message</DialogTitle>
-      <DialogDescription>
-        This is the reason your booking was rejected:
-      </DialogDescription>
-    </DialogHeader>
-    <p className="text-sm text-muted-foreground whitespace-pre-line">
-      {booking.rejectionMessage}
-    </p>
-    <DialogFooter>
-      <Button onClick={() => setShowMessage(false)}>Close</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-<Dialog open={showCancelModal} onOpenChange={() => setShowCancelModal(false)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Cancel Booking</DialogTitle>
-      <DialogDescription>
-        Please let the landlord know why you're cancelling this booking.
-      </DialogDescription>
-    </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rejection Message</DialogTitle>
+            <DialogDescription>
+              This is the reason your booking was rejected:
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">
+            {booking.rejectionMessage}
+          </p>
+          <DialogFooter>
+            <Button onClick={() => setShowMessage(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    <textarea
-      className="w-full rounded-md border border-input p-2 text-sm"
-      rows={4}
-      placeholder="e.g., I found another place closer to campus."
-      value={cancelMessage}
-      onChange={(e) => setCancelMessage(e.target.value)}
-    />
+      {/* Dialog: Cancel Booking */}
+      <Dialog
+        open={showCancelModal}
+        onOpenChange={() => setShowCancelModal(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel? You will forfeit the deposit of
+              <span className="font-semibold text-red-600">
+                {" "}
+                ${apartment?.depositAmount ?? 0}
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
 
-    <DialogFooter className="pt-4">
-      <Button variant="ghost" onClick={() => setShowCancelModal(false)}>
-        Back
-      </Button>
-      <Button
-  onClick={() => {
-    console.log("🛑 Cancelling booking:", booking._id);
-    console.log("📝 Message:", cancelMessage);
-    onCancel(booking._id, cancelMessage);
-    setShowCancelModal(false);
-    setCancelMessage("");
-  }}
->
-  Confirm Cancel
-</Button>
+          <textarea
+            className="w-full rounded-md border border-input p-2 text-sm mt-4"
+            rows={4}
+            placeholder="Optional: Explain why you're cancelling."
+            value={cancelMessage}
+            onChange={(e) => setCancelMessage(e.target.value)}
+          />
 
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-<Dialog open={showCancelMessage} onOpenChange={() => setShowCancelMessage(false)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Cancellation Message</DialogTitle>
-      <DialogDescription>
-        This is the reason you gave when cancelling this booking.
-      </DialogDescription>
-    </DialogHeader>
-    <p className="text-sm text-muted-foreground whitespace-pre-line">
-      {booking.cancellationMessage}
-    </p>
-    <DialogFooter>
-      <Button onClick={() => setShowCancelMessage(false)}>Close</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+          <DialogFooter className="pt-4">
+            <Button variant="ghost" onClick={() => setShowCancelModal(false)}>
+              Back
+            </Button>
+            <Button
+              onClick={() => {
+                console.log("🛑 Cancelling booking:", booking._id);
+                console.log("📝 Message:", cancelMessage);
+                onCancel(booking._id, cancelMessage);
+                setShowCancelModal(false);
+                setCancelMessage("");
+              }}
+            >
+              Confirm Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      {/* Dialog: Show Student's Cancel Message */}
+      <Dialog
+        open={showCancelMessage}
+        onOpenChange={() => setShowCancelMessage(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancellation Message</DialogTitle>
+            <DialogDescription>
+              This is the reason you gave when cancelling this booking.
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">
+            {booking.cancellationMessage}
+          </p>
+          <DialogFooter>
+            <Button onClick={() => setShowCancelMessage(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

@@ -22,19 +22,31 @@ interface AddApartmentDirectModalProps {
   buildingId: string;
 }
 
+interface ApartmentFormData {
+  name: string;
+  description: string;
+  pricePerMonth: string;
+  depositAmount: string;
+  capacity: string;
+  availableSpots: string;
+  amenities: string[];
+  pictures: File[];
+}
+
 const AddApartmentDirectModal: React.FC<AddApartmentDirectModalProps> = ({
   isOpen,
   setIsOpen,
   buildingId,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ApartmentFormData>({
     name: "",
     description: "",
     pricePerMonth: "",
+    depositAmount: "",
     capacity: "",
     availableSpots: "",
-    amenities: [] as string[],
-    pictures: [] as File[],
+    amenities: [],
+    pictures: [],
   });
 
   const handleCheckbox = (amenity: string) => {
@@ -59,6 +71,7 @@ const AddApartmentDirectModal: React.FC<AddApartmentDirectModalProps> = ({
         name: formData.name,
         description: formData.description,
         pricePerMonth: Number(formData.pricePerMonth),
+        depositAmount: Number(formData.depositAmount),
         capacity: Number(formData.capacity),
         availableSpots: Number(formData.availableSpots),
         amenities: formData.amenities,
@@ -69,6 +82,7 @@ const AddApartmentDirectModal: React.FC<AddApartmentDirectModalProps> = ({
         name: "",
         description: "",
         pricePerMonth: "",
+        depositAmount: "",
         capacity: "",
         availableSpots: "",
         amenities: [],
@@ -106,6 +120,14 @@ const AddApartmentDirectModal: React.FC<AddApartmentDirectModalProps> = ({
             value={formData.pricePerMonth}
             onChange={(e) =>
               setFormData({ ...formData, pricePerMonth: e.target.value })
+            }
+          />
+          <Input
+            type="number"
+            placeholder="Deposit Amount"
+            value={formData.depositAmount}
+            onChange={(e) =>
+              setFormData({ ...formData, depositAmount: e.target.value })
             }
           />
           <Input

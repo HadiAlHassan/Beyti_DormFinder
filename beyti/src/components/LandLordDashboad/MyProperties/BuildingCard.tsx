@@ -12,6 +12,7 @@ interface Apartment {
   _id: string;
   name: string;
   pricePerMonth: number;
+  depositAmount: number;
   capacity: number;
   availableSpots: number;
   isBooked: boolean;
@@ -39,11 +40,15 @@ interface Building {
 
 interface BuildingCardProps {
   building: Building;
-  refetchBuildings?: () => Promise<void>; // ✅ Optional prop
+  refetchBuildings?: () => Promise<void>;
+  onAddApartment?: (buildingId: string) => void; // ✅ now allowed
 }
 
-
-const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
+const BuildingCard: React.FC<BuildingCardProps> = ({
+  building,
+  refetchBuildings,
+  onAddApartment,
+}) => {
   const router = useRouter();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
 
@@ -86,9 +91,18 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
         </div>
 
         <div className="flex gap-4 pt-2">
-          <Button size="sm" onClick={() => setAddModalOpen(true)}>
-            ➕ Add Apartment
-          </Button>
+          {/* Public Building Button */}
+          {building.ispublic && onAddApartment ? (
+            <Button size="sm" onClick={() => onAddApartment(building._id)}>
+              ➕ Add Apartment
+            </Button>
+          ) : (
+            // Owned Building Button
+            <Button size="sm" onClick={() => setAddModalOpen(true)}>
+              ➕ Add Apartment
+            </Button>
+          )}
+
           <Button
             size="sm"
             variant="link"
@@ -101,11 +115,14 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
         </div>
       </CardContent>
 
-      <AddApartmentDirectModal
-        isOpen={isAddModalOpen}
-        setIsOpen={setAddModalOpen}
-        buildingId={building._id}
-      />
+      {/* Modal only for owned buildings */}
+      {!building.ispublic && (
+        <AddApartmentDirectModal
+          isOpen={isAddModalOpen}
+          setIsOpen={setAddModalOpen}
+          buildingId={building._id}
+        />
+      )}
     </Card>
   );
 };
