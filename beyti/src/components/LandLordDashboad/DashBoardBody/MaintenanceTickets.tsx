@@ -2,39 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { getCookie } from "@/utils/cookieUtils";
-import { useBuildings } from "@/context/BuildingsContext";
+import { getTicketsByLandlord } from "@/utils/ticketAPI"; // 🆕 import correct API function
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MaintenanceTicket } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MaintenanceTickets() {
-  const { buildings } = useBuildings();
-  const { token } = getCookie();
+  const { token, userId: landlordId } = getCookie();
   const [tickets, setTickets] = useState<MaintenanceTicket[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!buildings?.length) return;
-
-    const buildingIds = buildings.map((b) => b._id);
+    if (!landlordId || !token) return;
 
     const fetchTickets = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:5000/api/tickets/by-buildings",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ buildingIds }),
-          }
-        );
-
-        const data = await res.json();
-        setTickets(data);
+        const fetchedTickets = await getTicketsByLandlord(landlordId, token); // ✅ use API function
+        setTickets(fetchedTickets);
       } catch (err) {
         console.error("❌ Failed to fetch tickets:", err);
         setTickets([]);
@@ -44,18 +29,18 @@ export default function MaintenanceTickets() {
     };
 
     fetchTickets();
-  }, [buildings, token]);
+  }, [landlordId, token]);
+
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6">
       <h2 className="text-2xl font-semibold">Maintenance Tickets</h2>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : tickets && tickets.length > 0 ? (
+      {tickets && tickets.length > 0 ? (
         tickets.map((ticket) => (
           <Card key={ticket._id} className="shadow-sm">
-            <CardHeader>
+            <CardHeader className="space-y-2">
               <h3 className="text-lg font-medium">{ticket.title}</h3>
               <Badge
                 className={
@@ -69,8 +54,22 @@ export default function MaintenanceTickets() {
                 {ticket.status}
               </Badge>
             </CardHeader>
-            <CardContent>
-              <p>{ticket.description}</p>
+
+            <CardContent className="space-y-2 text-sm">
+              <p>
+                <strong>Description:</strong> {ticket.description}
+              </p>
+              {ticket.studentId && (
+                <p>
+                  <strong>Student:</strong> {ticket.studentId.first_name}{" "}
+                  {ticket.studentId.last_name}
+                </p>
+              )}
+              {ticket.building && (
+                <p>
+                  <strong>Building:</strong> {ticket.building.name}
+                </p>
+              )}
               {ticket.picture && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -83,7 +82,7 @@ export default function MaintenanceTickets() {
           </Card>
         ))
       ) : (
-        <p className="text-gray-500">No tickets found for your properties.</p>
+        <p className="text-gray-500">No maintenance tickets found.</p>
       )}
     </div>
   );

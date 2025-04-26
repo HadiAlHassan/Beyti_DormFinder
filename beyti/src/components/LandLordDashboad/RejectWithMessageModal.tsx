@@ -16,9 +16,17 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (message: string) => void;
+  customTitle?: string; // 🆕
+  customDescription?: string; // 🆕
 }
 
-const RejectWithMessageModal: React.FC<Props> = ({ open, onClose, onSubmit }) => {
+const RejectWithMessageModal: React.FC<Props> = ({
+  open,
+  onClose,
+  onSubmit,
+  customTitle,
+  customDescription,
+}) => {
   const [message, setMessage] = useState("");
 
   const handleConfirm = () => {
@@ -31,9 +39,10 @@ const RejectWithMessageModal: React.FC<Props> = ({ open, onClose, onSubmit }) =>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rejection Message</DialogTitle>
+          <DialogTitle>{customTitle ?? "Rejection Message"}</DialogTitle>
           <DialogDescription>
-            Let the student know why you're rejecting this booking.
+            {customDescription ??
+              "Let the student know why you're rejecting this booking."}
           </DialogDescription>
         </DialogHeader>
 
@@ -45,7 +54,9 @@ const RejectWithMessageModal: React.FC<Props> = ({ open, onClose, onSubmit }) =>
         />
 
         <DialogFooter className="pt-4">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleConfirm}>Submit</Button>
         </DialogFooter>
       </DialogContent>

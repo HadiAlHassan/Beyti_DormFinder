@@ -28,7 +28,6 @@ export interface Building {
     otherPolicies?: string;
   };
 }
-
 export interface MaintenanceTicket {
   _id: string;
   title: string;
@@ -38,4 +37,14 @@ export interface MaintenanceTicket {
     data: string;
     contentType: string;
   };
+  studentId?: {
+    first_name: string;
+    last_name: string;
+    email?: string;
+  };
+  building?: {
+    name: string;
+    address: string;
+  };
 }
+
