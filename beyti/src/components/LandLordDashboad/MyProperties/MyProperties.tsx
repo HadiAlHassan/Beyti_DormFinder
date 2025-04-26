@@ -1,53 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
-import MyPropertiesList from "./MyPropertiesList";
-import { Button } from "../../ui/button";
-import { Plus } from "lucide-react";
-import AddListingModal from "./AddListingModal";
-import AddBuildingModal from "./AddBuildingModal";
-import AddApartmentModal from "./AddApartmentModal";
+import { useState } from "react";
+import { useBuildings } from "@/context/BuildingsContext";
+import BuildingCard from "./BuildingCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const MyProperties = () => {
-  const [isListingModalOpen, setListingModalOpen] = useState(false);
-  const [isBuildingModalOpen, setBuildingModalOpen] = useState(false);
-  const [isApartmentModalOpen, setApartmentModalOpen] = useState(false);
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(
-    null
-  );
+  const { buildings, isLoading, refetchBuildings } = useBuildings();
+  const [filter, setFilter] = useState("");
 
-  const openApartmentModalForBuilding = (buildingId: string) => {
-    setSelectedBuildingId(buildingId);
-    setApartmentModalOpen(true);
-  };
+  const filtered =
+    buildings?.filter((b) =>
+      b.name.toLowerCase().includes(filter.toLowerCase())
+    ) ?? [];
 
   return (
-    <div className="p-6 space-y-8">
-      <div className="flex justify-end">
-        <Button onClick={() => setListingModalOpen(true)}>
-          <Plus className="mr-2" /> Add Listing
-        </Button>
+    <div className="space-y-4">
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search buildings..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md"
+        />
       </div>
 
-      <AddListingModal
-        isOpen={isListingModalOpen}
-        setIsOpen={setListingModalOpen}
-        openBuildingModal={() => setBuildingModalOpen(true)}
-        openApartmentModal={() => setApartmentModalOpen(true)}
-      />
-
-      <AddBuildingModal
-        isOpen={isBuildingModalOpen}
-        setIsOpen={setBuildingModalOpen}
-      />
-
-      <AddApartmentModal
-        isOpen={isApartmentModalOpen}
-        setIsOpen={setApartmentModalOpen}
-        buildingId={selectedBuildingId}
-      />
-
-      <MyPropertiesList onAddApartment={openApartmentModalForBuilding} />
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : filtered.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((building) => (
+            <BuildingCard
+              key={building._id}
+              building={building}
+              refetchBuildings={async () => refetchBuildings()}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center text-sm">
+          No buildings found.
+        </p>
+      )}
     </div>
   );
 };

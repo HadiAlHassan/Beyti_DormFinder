@@ -1,102 +1,90 @@
 "use client";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { useEffect, useState } from "react";
-
-type Ticket = {
-  _id: string;
-  title: string;
-  status: "open" | "in progress" | "resolved";
-  updatedAt: string;
-  dorm: {
-    name: string;
-  };
-};
-
-type TicketCounts = {
-  open: number;
-  inProgress: number;
-  resolved: number;
-};
+import { getCookie } from "@/utils/cookieUtils";
+import { useBuildings } from "@/context/BuildingsContext";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MaintenanceTicket } from "@/types";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MaintenanceTickets() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [counts, setCounts] = useState<TicketCounts>({
-    open: 0,
-    inProgress: 0,
-    resolved: 0,
-  });
+  const { buildings } = useBuildings();
+  const { token } = getCookie();
+  const [tickets, setTickets] = useState<MaintenanceTicket[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTickets() {
+    if (!buildings?.length) return;
+
+    const buildingIds = buildings.map((b) => b._id);
+
+    const fetchTickets = async () => {
       try {
-        const res = await fetch("/api/landlord/tickets");
+        const res = await fetch(
+          "http://localhost:5000/api/tickets/by-buildings",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ buildingIds }),
+          }
+        );
+
         const data = await res.json();
-        setTickets(data.tickets);
-        setCounts(data.counts);
+        setTickets(data);
       } catch (err) {
-        console.error("Failed to fetch tickets", err);
+        console.error("❌ Failed to fetch tickets:", err);
+        setTickets([]);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
     fetchTickets();
-  }, []);
-
+  }, [buildings, token]);
 
   return (
-    <div className="space-y-6">
-      {/* 🔹 Ticket Status Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Open</CardTitle>
-            <CardDescription>{counts.open} tickets</CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>In Progress</CardTitle>
-            <CardDescription>{counts.inProgress} tickets</CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Resolved</CardTitle>
-            <CardDescription>{counts.resolved} tickets</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-semibold">Maintenance Tickets</h2>
 
-      {/* 🔹 Recent Tickets Table */}
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-muted text-left">
-            <tr>
-              <th className="px-4 py-2">Issue</th>
-              <th className="px-4 py-2">Dorm</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Last Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) => (
-              <tr key={ticket._id} className="border-t">
-                <td className="px-4 py-2">{ticket.title}</td>
-                <td className="px-4 py-2">{ticket.dorm?.name}</td>
-                <td className="px-4 py-2 capitalize">{ticket.status}</td>
-                <td className="px-4 py-2">
-                  {new Date(ticket.updatedAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : tickets && tickets.length > 0 ? (
+        tickets.map((ticket) => (
+          <Card key={ticket._id} className="shadow-sm">
+            <CardHeader>
+              <h3 className="text-lg font-medium">{ticket.title}</h3>
+              <Badge
+                className={
+                  ticket.status === "open"
+                    ? "bg-yellow-500"
+                    : ticket.status === "in progress"
+                    ? "bg-blue-500"
+                    : "bg-green-600"
+                }
+              >
+                {ticket.status}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <p>{ticket.description}</p>
+              {ticket.picture && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`data:${ticket.picture.contentType};base64,${ticket.picture.data}`}
+                  alt="Ticket"
+                  className="mt-3 rounded max-w-xs"
+                />
+              )}
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <p className="text-gray-500">No tickets found for your properties.</p>
+      )}
     </div>
   );
 }
