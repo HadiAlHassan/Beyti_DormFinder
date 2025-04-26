@@ -11,11 +11,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
 export default function RentPage() {
+  const { userId, token } = getCookie();
+
   const [payments, setPayments] = useState<RentPayment[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const { userId, token } = getCookie();
   const [dormId, setDormId] = useState<string>("");
+  const [landlordId, setLandlordId] = useState<string | null>(null);
+  const [infoLoading, setInfoLoading] = useState(true);
 
+  // Fetch rent payments
   useEffect(() => {
     const fetchRent = async () => {
       try {
@@ -29,24 +33,54 @@ export default function RentPage() {
       }
     };
 
-    const getDormIdFromBooking = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/active/${userId}`,
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
-      );
+    fetchRent();
+  }, []);
 
-      if (res.ok) {
-        const result = await res.json();
-        setDormId(result.apartment._id);
+  // Fetch dormId and landlordId
+  useEffect(() => {
+    const fetchBookingInfo = async () => {
+      try {
+        const resDorm = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/active/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (resDorm.ok) {
+          const result = await resDorm.json();
+          setDormId(result.apartment._id);
+        } else {
+          console.error("Failed to fetch dorm ID");
+        }
+
+        const resLandlord = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/rms/get-my-landlord`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (resLandlord.ok) {
+          const result = await resLandlord.json();
+          setLandlordId(result.landlordId);
+        } else {
+          console.error("Failed to fetch landlord info");
+        }
+      } catch (error) {
+        console.error("Error fetching booking info:", error);
+      } finally {
+        setInfoLoading(false);
       }
     };
 
-    fetchRent();
-    getDormIdFromBooking();
+    if (userId && token) {
+      fetchBookingInfo();
+    }
   }, [userId, token]);
 
   const getStatusColor = (status: string) => {
@@ -58,7 +92,7 @@ export default function RentPage() {
   const handlePayNow = async (paymentId: string) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/pay-online/${paymentId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/pay-online/${paymentId}`,
         {
           method: "POST",
           headers: {
@@ -78,12 +112,20 @@ export default function RentPage() {
     }
   };
 
+  if (infoLoading) {
+    return <div>Loading rent information...</div>;
+  }
+
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-2xl font-bold">Rent Payments</h2>
 
       {/* 🔹 Ticket submission modal */}
-      <SubmitTicketModal dormId={dormId} studentId={userId || ""} />
+      <SubmitTicketModal
+        landlordId={landlordId ?? ""}
+        dormId={dormId}
+        studentId={userId || ""}
+      />
 
       {/* 🔹 Rent Cards */}
       {loading ? (
