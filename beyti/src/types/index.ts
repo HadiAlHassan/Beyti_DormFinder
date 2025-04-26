@@ -2,6 +2,7 @@ export interface Apartment {
   _id: string;
   name: string;
   pricePerMonth: number;
+   depositAmount: number;
   capacity: number;
   amenities: string[];
   availableSpots: number;

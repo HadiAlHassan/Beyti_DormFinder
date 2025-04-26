@@ -18,12 +18,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useToast } from "@/components/ui/use-toast";
-import { getCookie } from "@/utils/cookieUtils";
+
 interface Apartment {
   _id: string;
   name: string;
   pricePerMonth: number;
+  depositAmount: number; // 🆕 Added
   capacity: number;
   availableSpots: number;
   isBooked: boolean;
@@ -41,46 +41,6 @@ interface Props {
 }
 
 const ApartmentCard: React.FC<Props> = ({ apartment, onView, onEdit }) => {
-  const { toast } = useToast();
-
-const handleBookClick = async () => {
-  const { userId, token } = getCookie();
-  if (!userId || !token) {
-    toast(
-      "Unauthorized",{
-      description: "You must be logged in to book.",
-    });
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/has-active/${userId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    const data = await res.json();
-
-    if (data.hasActive) {
-      toast(
-        "Booking Blocked",{
-        description: "You already have a pending or approved booking.",
-      });
-    } else {
-      onView(); // proceed to open booking dialog
-    }
-  } catch (error) {
-    console.error("Error checking booking:", error);
-    toast(
-      "Error",{
-      description: "Could not check booking status.",
-    });
-  }
-};
-
-
-
   const images =
     apartment.pictures?.map((pic) => ({
       src: `data:${pic.contentType};base64,${Buffer.from(
@@ -93,8 +53,7 @@ const handleBookClick = async () => {
   useEffect(() => {
     if (!hovering || images.length < 2) return;
 
-    const interval = setInterval(() => {
-    }, 2000);
+    const interval = setInterval(() => {}, 2000);
 
     return () => clearInterval(interval);
   }, [hovering, images.length]);
@@ -151,6 +110,9 @@ const handleBookClick = async () => {
           💰 ${apartment.pricePerMonth}/month
         </p>
         <p className="text-sm text-muted-foreground">
+          🔒 Deposit: ${apartment.depositAmount}
+        </p>
+        <p className="text-sm text-muted-foreground">
           👥 {apartment.availableSpots} of {apartment.capacity} spots available
         </p>
       </CardHeader>
@@ -176,7 +138,7 @@ const handleBookClick = async () => {
       </CardContent>
 
       <CardFooter className="flex justify-end gap-2">
-        <Button size="sm" onClick={handleBookClick}>
+        <Button size="sm" onClick={onView}>
           Book
         </Button>
       </CardFooter>

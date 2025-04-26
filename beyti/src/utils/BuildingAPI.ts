@@ -57,11 +57,13 @@ export async function createApartment(data: {
   name: string;
   description: string;
   pricePerMonth: number;
+  depositAmount: number; // 🆕 ADD THIS LINE
   capacity: number;
   availableSpots: number;
-  amenities: string[]; // ✅ Added this
+  amenities: string[];
   pictures: File[];
-}) {
+})
+ {
   const { token } = getCookie();
   if (!token) throw new Error("Missing token.");
 
@@ -70,6 +72,7 @@ export async function createApartment(data: {
   fd.append("name", data.name);
   fd.append("description", data.description);
   fd.append("pricePerMonth", data.pricePerMonth.toString());
+  fd.append("depositAmount", data.depositAmount.toString());
   fd.append("capacity", data.capacity.toString());
   fd.append("availableSpots", data.availableSpots.toString());
   fd.append("amenities", JSON.stringify(data.amenities));

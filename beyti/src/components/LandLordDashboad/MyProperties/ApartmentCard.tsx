@@ -23,6 +23,7 @@ interface Apartment {
   _id: string;
   name: string;
   pricePerMonth: number;
+  depositAmount: number; // 🆕 Added
   capacity: number;
   availableSpots: number;
   isBooked: boolean;
@@ -52,8 +53,7 @@ const ApartmentCard: React.FC<Props> = ({ apartment, onView, onEdit }) => {
   useEffect(() => {
     if (!hovering || images.length < 2) return;
 
-    const interval = setInterval(() => {
-    }, 2000);
+    const interval = setInterval(() => {}, 2000);
 
     return () => clearInterval(interval);
   }, [hovering, images.length]);
@@ -108,6 +108,9 @@ const ApartmentCard: React.FC<Props> = ({ apartment, onView, onEdit }) => {
         <CardTitle>{apartment.name}</CardTitle>
         <p className="text-sm text-muted-foreground">
           💰 ${apartment.pricePerMonth}/month
+        </p>
+        <p className="text-sm text-muted-foreground">
+          🔒 Deposit: ${apartment.depositAmount}
         </p>
         <p className="text-sm text-muted-foreground">
           👥 {apartment.availableSpots} of {apartment.capacity} spots available
