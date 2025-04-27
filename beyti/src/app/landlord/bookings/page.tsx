@@ -1,0 +1,328 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  getBookingsByDormOwner,
+  updateBookingStatus,
+} from "@/utils/bookingAPILandlordView";
+import StudentProfileCardBooking from "@/components/StudentDashboard/StudentProfileCardBooking";
+import StudentProfileViewer from "@/components/StudentDashboard/RoomateViewer";
+import { UserProfile } from "@/utils/FetchUserAPI";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import RejectWithMessageModal from "@/components/LandLordDashboad/RejectWithMessageModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const statusOrder = ["pending", "approved", "rejected", "cancelled"];
+
+export default function LandlordBookingsPage() {
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [viewingStudent, setViewingStudent] = useState<UserProfile | null>(
+    null
+  );
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null); // 🆕
+  const [showModal, setShowModal] = useState(false);
+  const [customTitle, setCustomTitle] = useState<string | null>(null);
+  const [customDescription, setCustomDescription] = useState<string | null>(
+    null
+  );
+
+  const handleRejectWithMessage = (booking: any) => {
+    setRejectingId(booking._id);
+    setSelectedBooking(booking);
+
+    if (booking.status === "approved" || booking.status === "pending") {
+      setCustomTitle("Cancel Booking and Refund Deposit");
+      setCustomDescription(
+        `Are you sure you want to cancel this booking? You will refund the deposit of $${
+          booking.apartmentId?.depositAmount ?? 0
+        } to the student.`
+      );
+    } else {
+      setCustomTitle(null);
+      setCustomDescription(null);
+    }
+
+    setShowModal(true);
+  };
+
+  const [viewMessage, setViewMessage] = useState<string | null>(null);
+  const [viewCancelMessage, setViewCancelMessage] = useState<string | null>(
+    null
+  );
+
+  const confirmRejection = async (message: string) => {
+    if (!rejectingId) return;
+    try {
+      await updateBookingStatus(rejectingId, "rejected", message);
+      const refreshed = await getBookingsByDormOwner();
+      setBookings(refreshed);
+    } catch (err) {
+      console.error("❌ Failed to reject with message:", err);
+    }
+  };
+
+  useEffect(() => {
+    getBookingsByDormOwner()
+      .then((bookings) => {
+        console.log("📦 bookings fetched:", bookings);
+        if (Array.isArray(bookings)) setBookings(bookings);
+        else setBookings([]);
+      })
+      .catch((err) => {
+        console.error("❌ Failed to fetch bookings:", err);
+        setBookings([]);
+      });
+  }, []);
+
+  const handleStatusUpdate = async (
+    id: string,
+    newStatus: "approved" | "rejected" | "cancelled"
+  ) => {
+    try {
+      await updateBookingStatus(id, newStatus);
+      const refreshed = await getBookingsByDormOwner();
+      setBookings(refreshed);
+    } catch (err) {
+      console.error(`❌ Failed to ${newStatus} booking:`, err);
+    }
+  };
+
+  const grouped = bookings.reduce((acc, booking) => {
+    const status = booking.status || "unknown";
+    if (!acc[status]) acc[status] = [];
+    acc[status].push(booking);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  return (
+    <div className="p-6 space-y-8">
+      {viewingStudent ? (
+        <StudentProfileViewer
+          profile={viewingStudent}
+          onBack={() => setViewingStudent(null)}
+        />
+      ) : (
+        statusOrder.map((status) => (
+          <div key={status}>
+            <h2 className="text-2xl font-semibold text-primary mb-4">
+              {status.charAt(0).toUpperCase() + status.slice(1)} Bookings
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {grouped[status]?.map((booking: any) => {
+                const student = { ...booking.studentId };
+
+                if (
+                  student.picture?.data?.data &&
+                  Array.isArray(student.picture.data.data)
+                ) {
+                  const binary = String.fromCharCode(
+                    ...student.picture.data.data
+                  );
+                  student.picture.data = btoa(binary);
+                }
+
+                return (
+                  <Card
+                    key={booking._id}
+                    className="rounded-2xl shadow border border-muted"
+                  >
+                    <CardHeader>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div className="text-base font-medium text-primary">
+                          🏢 {booking.buildingId?.name}
+                        </div>
+                        <div>
+                          <strong>Address:</strong>{" "}
+                          {booking.buildingId?.address}
+                        </div>
+                        <div>
+                          <strong>Description:</strong>{" "}
+                          {booking.buildingId?.description}
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-2 text-sm">
+                      <div className="bg-muted/40 p-2 rounded-md space-y-1">
+                        <p>
+                          <strong>Apartment:</strong>{" "}
+                          {booking.apartmentId?.name}
+                        </p>
+                        <p>
+                          <strong>Price:</strong> $
+                          {booking.apartmentId?.pricePerMonth}
+                        </p>
+                        <p>
+                          <strong>Capacity:</strong>{" "}
+                          {booking.apartmentId?.capacity}
+                        </p>
+                        <p>
+                          <strong>Available Spots:</strong>{" "}
+                          {booking.apartmentId?.availableSpots}
+                        </p>
+                        <div>
+                          <strong>Status:</strong>{" "}
+                          <Badge
+                            className={
+                              status === "pending"
+                                ? "text-yellow-600 border-yellow-600"
+                                : status === "approved"
+                                ? "text-green-600 border-green-600"
+                                : status === "rejected"
+                                ? "text-red-600 border-red-600"
+                                : "text-gray-600 border-gray-600"
+                            }
+                            variant="outline"
+                          >
+                            {status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    <CardContent className="pt-2">
+                      <StudentProfileCardBooking
+                        profile={student}
+                        onView={() => setViewingStudent(student)}
+                      />
+                    </CardContent>
+
+                    {(status === "pending" ||
+                      status === "approved" ||
+                      status === "rejected" ||
+                      status === "cancelled") && (
+                      <CardFooter className="flex justify-end gap-2">
+                        {status === "pending" && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleStatusUpdate(booking._id, "approved")
+                              }
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleRejectWithMessage(booking)}
+                            >
+                              Reject (Refund Deposit)
+                            </Button>
+                          </>
+                        )}
+                        {status === "approved" && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRejectWithMessage(booking)}
+                          >
+                            Cancel Booking (Refund Deposit)
+                          </Button>
+                        )}
+                        {status === "cancelled" &&
+                          booking.cancellationMessage && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                setViewCancelMessage(
+                                  booking.cancellationMessage
+                                )
+                              }
+                            >
+                              View Cancel Message
+                            </Button>
+                          )}
+                        {status === "rejected" && (
+                          <div className="flex gap-2">
+                            {booking.rejectionMessage && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  setViewMessage(booking.rejectionMessage)
+                                }
+                              >
+                                View Message
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </CardFooter>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* Reject Modal */}
+      <RejectWithMessageModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={confirmRejection}
+        customTitle={customTitle ?? undefined}
+        customDescription={customDescription ?? undefined}
+      />
+
+      {/* View Rejection Message Dialog */}
+      <Dialog open={!!viewMessage} onOpenChange={() => setViewMessage(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rejection Message</DialogTitle>
+            <DialogDescription>
+              This is the message the student received:
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">
+            {viewMessage}
+          </p>
+          <DialogFooter>
+            <Button onClick={() => setViewMessage(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Cancellation Message Dialog */}
+<Dialog
+  open={!!viewCancelMessage}
+  onOpenChange={() => setViewCancelMessage(null)}
+>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancellation Message</DialogTitle>
+      <DialogDescription>
+        This is the cancellation message sent to the student:
+      </DialogDescription>
+    </DialogHeader>
+    <p className="text-sm text-muted-foreground whitespace-pre-line">
+      {viewCancelMessage}
+    </p>
+    <DialogFooter>
+      <Button onClick={() => setViewCancelMessage(null)}>Close</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
+    </div>
+  );
+}
