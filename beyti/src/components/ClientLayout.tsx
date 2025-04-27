@@ -67,16 +67,10 @@ export default function ClientLayout({
                   About Us
                 </Link>
                 <Link
-                  href="/rate-us"
-                  className="text-white hover:text-secondary"
-                >
-                  Rate Us
-                </Link>
-                <Link
                   href="/contact"
                   className="text-white hover:text-secondary"
                 >
-                  Contact
+                  Contact Us
                 </Link>
               </div>
               {token ? (
@@ -131,16 +125,10 @@ export default function ClientLayout({
                   About Us
                 </Link>
                 <Link
-                  href="/rate-us"
-                  className="text-white hover:text-secondary"
-                >
-                  Rate Us
-                </Link>
-                <Link
                   href="/contact"
                   className="text-white hover:text-secondary"
                 >
-                  Contact
+                  Contact Us
                 </Link>
               </div>
               {token ? (

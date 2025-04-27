@@ -308,6 +308,29 @@ export default function LandlordBookingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* View Cancellation Message Dialog */}
+<Dialog
+  open={!!viewCancelMessage}
+  onOpenChange={() => setViewCancelMessage(null)}
+>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancellation Message</DialogTitle>
+      <DialogDescription>
+        This is the cancellation message sent to the student:
+      </DialogDescription>
+    </DialogHeader>
+    <p className="text-sm text-muted-foreground whitespace-pre-line">
+      {viewCancelMessage}
+    </p>
+    <DialogFooter>
+      <Button onClick={() => setViewCancelMessage(null)}>Close</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
     </div>
   );
 }

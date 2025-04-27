@@ -23,7 +23,7 @@ const StudentProfileCard: React.FC<Props> = ({ profile, onView }) => {
     try {
       const { token } = getCookie();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/active/${profile.lau_id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/active2/${profile.lau_id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

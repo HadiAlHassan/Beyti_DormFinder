@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/cookieUtils";
 import { useToast } from "@/components/ui/use-toast";
+import { payDeposit } from "@/utils/walletAPI"; // 🆕 import payDeposit
 
 interface BookingDialogProps {
   open: boolean;
@@ -32,13 +33,14 @@ export const BookingDialog: React.FC<BookingDialogProps> = ({
   apartment,
   studentId,
 }) => {
-  const { toast } = useToast(); // ✅ correct placement inside component
+  const { toast } = useToast();
 
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [confirmPaymentOpen, setConfirmPaymentOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // 🆕 loading state
 
   const handleApplyClick = () => {
     if (!checkIn || !checkOut) {
@@ -47,21 +49,27 @@ export const BookingDialog: React.FC<BookingDialogProps> = ({
       });
       return;
     }
-    setConfirmPaymentOpen(true); // open deposit confirmation popup
+    setConfirmPaymentOpen(true);
   };
 
   const handleConfirmPayment = async () => {
     setConfirmPaymentOpen(false);
+    setLoading(true);
 
     const { token } = getCookie();
     if (!token) {
       toast("Not Authenticated", {
         description: "You must be logged in to book.",
       });
+      setLoading(false);
       return;
     }
 
     try {
+      // 🏦 1. Pay deposit first
+      await payDeposit(apartment._id);
+
+      // ✅ 2. Then submit booking
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/student/book`,
         {
@@ -81,6 +89,7 @@ export const BookingDialog: React.FC<BookingDialogProps> = ({
             depositAmount: apartment.depositAmount,
             note,
           }),
+          credentials: "include",
         }
       );
 
@@ -95,16 +104,14 @@ export const BookingDialog: React.FC<BookingDialogProps> = ({
       toast("✅ Booking Submitted", {
         description: "Your request has been sent for approval.",
       });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast("Booking Failed", {
-          description: error.message,
-        });
-      } else {
-        toast("Booking Failed", {
-          description: "An unexpected error occurred.",
-        });
-      }
+    } catch (error: any) {
+      console.error("❌ Error:", error);
+
+      toast("Booking Failed", {
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,17 +209,21 @@ export const BookingDialog: React.FC<BookingDialogProps> = ({
 
           <div className="space-y-4">
             <p className="text-center text-lg">
-              You must pay a deposit of <strong>${apartment.depositAmount}</strong> to book.
+              You must pay a deposit of{" "}
+              <strong>${apartment.depositAmount}</strong> to book.
             </p>
 
             <div className="flex justify-center gap-4 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setConfirmPaymentOpen(false)}
+                disabled={loading}
               >
                 Cancel
               </Button>
-              <Button onClick={handleConfirmPayment}>Confirm Payment</Button>
+              <Button onClick={handleConfirmPayment} disabled={loading}>
+                {loading ? "Processing..." : "Confirm Payment"}
+              </Button>
             </div>
           </div>
         </DialogContent>

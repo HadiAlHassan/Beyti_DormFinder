@@ -17,7 +17,7 @@ const InfoSection = () => {
     if (!role) {
       router.push("/login");
     } else if (role === "student") {
-      router.push("/student/dashboard");
+      router.push("/student/home");
     } else if (role === "landlord") {
       router.push("/landlord/dashboard");
     } else {
