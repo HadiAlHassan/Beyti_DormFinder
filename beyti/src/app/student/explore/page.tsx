@@ -55,7 +55,7 @@
   const ExplorePage: React.FC = () => {
     console.log("done");
     
-    const { buildings, loading, error } = useDormData();
+    const { buildings, loading} = useDormData();
     const [filteredBuildings, setFilteredBuildings] = useState<Building[]>([]);
     const [viewMode, setViewMode] = useState<"map" | "catalog">("map");
     const { apartmentsByBuilding } = useApartmentData(); 
@@ -154,6 +154,7 @@ console.log(apartmentsByBuilding);
         .filter((b): b is BuildingWithRelevance => b !== null)
         .sort((a, b) => b.relevantApartmentCount - a.relevantApartmentCount);
     
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result: Building[] = filtered.map(({ relevantApartmentCount, ...rest }) => rest);
     
       console.log(`🔍 Search submitted. ${result.length} buildings matched.`);

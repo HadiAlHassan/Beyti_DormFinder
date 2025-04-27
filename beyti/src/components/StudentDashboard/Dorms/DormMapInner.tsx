@@ -79,7 +79,15 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
             allPlaces.push(...results);
           }
           if (completed === types.length) {
-            setPlaces(allPlaces);
+            // 🔥 Deduplicate places
+            const uniquePlacesMap = new Map<
+              string,
+              google.maps.places.PlaceResult
+            >();
+            allPlaces.forEach((place) => {
+              if (place.place_id) uniquePlacesMap.set(place.place_id, place);
+            });
+            setPlaces(Array.from(uniquePlacesMap.values()));
           }
         }
       );
@@ -87,6 +95,7 @@ const DormMapInner = ({ buildings }: DormMapInnerProps) => {
 
     return () => circle.setMap(null);
   }, [circleCenter, map, searchRadius]);
+
 
   return (
     <>
