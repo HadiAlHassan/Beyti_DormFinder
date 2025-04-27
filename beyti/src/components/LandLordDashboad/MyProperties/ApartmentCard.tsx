@@ -36,11 +36,10 @@ interface Apartment {
 
 interface Props {
   apartment: Apartment;
-  onView: () => void;
   onEdit: () => void;
 }
 
-const ApartmentCard: React.FC<Props> = ({ apartment, onView, onEdit }) => {
+const ApartmentCard: React.FC<Props> = ({ apartment, onEdit }) => {
   const images =
     apartment.pictures?.map((pic) => ({
       src: `data:${pic.contentType};base64,${Buffer.from(
@@ -138,10 +137,7 @@ const ApartmentCard: React.FC<Props> = ({ apartment, onView, onEdit }) => {
       </CardContent>
 
       <CardFooter className="flex justify-end gap-2">
-        <Button size="sm" onClick={onView}>
-          View
-        </Button>
-        <Button variant="outline" size="sm" onClick={onEdit}>
+        <Button variant="outline" size="sm" onClick={onEdit} disabled = {apartment.capacity !== apartment.availableSpots}>
           Edit
         </Button>
       </CardFooter>
