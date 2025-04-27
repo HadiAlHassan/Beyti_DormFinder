@@ -4,6 +4,7 @@ interface PromiseResponse {
   success: boolean;
   message: string;
   token?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profile?: any;
 }
 
@@ -31,6 +32,7 @@ const logIn = async (
     }
 
     return { success: false, message: data.message };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error logging in user:", error);
     return { success: false, message: "An error occurred while logging in." };
@@ -61,6 +63,7 @@ const logInOwner = async (
     }
 
     return { success: false, message: data.message };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error logging in user:", error);
     return { success: false, message: "An error occurred while logging in." };

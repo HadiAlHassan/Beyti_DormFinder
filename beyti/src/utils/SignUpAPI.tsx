@@ -61,10 +61,11 @@ interface PromiseResponse {
       if (data.success) {
       const studentId = data.profile;
       setCookie("authToken", data.jwt, 60, 'student', studentId);
-      window.location.href = `/student/${studentId}`;
+      window.location.href = `/student/home`;
       }
   
       return { message: data.message, success: data.success };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
     console.error("Error signing up user:", error);
     return { success: false, message: error.message || "An error occurred while signing up." };
@@ -121,10 +122,11 @@ interface PromiseResponse {
       if (data.success) {
         const ownerId = data.profile;
         setCookie("authToken", data.jwt, 60, "landlord",ownerId);
-        window.location.href = `/landlord/${ownerId}`;
+        window.location.href = `/landlord/dashboard`;
       }
   
       return { message: data.message, success: data.success };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error signing up owner:", error);
       return { success: false, message: error.message || "An error occurred while signing up." };

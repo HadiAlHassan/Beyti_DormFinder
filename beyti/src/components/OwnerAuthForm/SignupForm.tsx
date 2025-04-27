@@ -444,7 +444,7 @@ const MultiStepForm = () => {
             </Select>
           </div>
 
-          <Label>* What's your gender?</Label>
+          <Label>* What&apos;s your gender?</Label>
           <RadioGroup
             value={gender}
             onValueChange={(value) => setGender(value)}
@@ -566,7 +566,7 @@ const MultiStepForm = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pet">
-                  What was your first pet's name?
+                  What was your first pet&apos;s name?
                 </SelectItem>
                 <SelectItem value="school">
                   What was the name of your first school?

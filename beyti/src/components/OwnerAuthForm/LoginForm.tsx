@@ -39,8 +39,7 @@ const LoginForm = () => {
     const response = await logInOwner(email, password, rememberMe);
 
     if (response.success) {
-      const ownerId = response.profile;
-      window.location.href = `/landlord/${ownerId}`;
+      window.location.href = `/landlord/dashboard`;
     } else {
       setAlertMessage(response.message);
       setAlertOpen(true);
