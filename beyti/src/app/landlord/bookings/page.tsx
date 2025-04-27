@@ -251,14 +251,6 @@ export default function LandlordBookingsPage() {
                           )}
                         {status === "rejected" && (
                           <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleStatusUpdate(booking._id, "approved")
-                              }
-                            >
-                              Approve
-                            </Button>
                             {booking.rejectionMessage && (
                               <Button
                                 size="sm"

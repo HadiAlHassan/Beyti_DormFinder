@@ -29,7 +29,8 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
   const [showCancelMessage, setShowCancelMessage] = useState(false);
   const { toast } = useToast();
   const [showMessage, setShowMessage] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPendingCancelModal, setShowPendingCancelModal] = useState(false);
+  const [showApprovedCancelModal, setShowApprovedCancelModal] = useState(false);
   const [cancelMessage, setCancelMessage] = useState("");
 
   const apartment = booking.apartmentId;
@@ -120,12 +121,23 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
       </CardContent>
 
       {/* Cancel Button if pending or approved */}
-      {(booking.status === "pending" || booking.status === "approved") && (
+      {(booking.status === "pending") && (
         <CardFooter className="flex justify-end pt-2">
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => setShowCancelModal(true)}
+            onClick={() => setShowPendingCancelModal(true)}
+          >
+            Cancel
+          </Button>
+        </CardFooter>
+      )}
+      {(booking.status === "approved") && (
+        <CardFooter className="flex justify-end pt-2">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => setShowApprovedCancelModal(true)}
           >
             Cancel
           </Button>
@@ -176,50 +188,83 @@ const StudentBookingCard: React.FC<Props> = ({ booking, onCancel }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Cancel Booking */}
-      <Dialog
-        open={showCancelModal}
-        onOpenChange={() => setShowCancelModal(false)}
+      <Dialog open={showPendingCancelModal} onOpenChange={setShowPendingCancelModal}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancel Pending Booking</DialogTitle>
+      <DialogDescription>
+        Are you sure you want to cancel? Your deposit of 
+        <span className="font-semibold text-green-600">
+          {" "}${apartment?.depositAmount ?? 0}
+        </span>{" "}
+        will be returned to your wallet.
+      </DialogDescription>
+    </DialogHeader>
+
+    <textarea
+      className="w-full rounded-md border border-input p-2 text-sm mt-4"
+      rows={4}
+      placeholder="Optional: Explain why you're cancelling."
+      value={cancelMessage}
+      onChange={(e) => setCancelMessage(e.target.value)}
+    />
+
+    <DialogFooter className="pt-4">
+      <Button variant="ghost" onClick={() => setShowPendingCancelModal(false)}>
+        Back
+      </Button>
+      <Button
+        onClick={() => {
+          console.log("🛑 Cancelling pending booking:", booking._id);
+          onCancel(booking._id, cancelMessage);
+          setShowPendingCancelModal(false);
+          setCancelMessage("");
+        }}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cancel Booking</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel? You will forfeit the deposit of
-              <span className="font-semibold text-red-600">
-                {" "}
-                ${apartment?.depositAmount ?? 0}
-              </span>
-              .
-            </DialogDescription>
-          </DialogHeader>
+        Confirm Cancel
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
-          <textarea
-            className="w-full rounded-md border border-input p-2 text-sm mt-4"
-            rows={4}
-            placeholder="Optional: Explain why you're cancelling."
-            value={cancelMessage}
-            onChange={(e) => setCancelMessage(e.target.value)}
-          />
+<Dialog open={showApprovedCancelModal} onOpenChange={setShowApprovedCancelModal}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Cancel Approved Booking</DialogTitle>
+      <DialogDescription>
+        Are you sure you want to cancel? You might forfeit your deposit of 
+        <span className="font-semibold text-red-600">
+          {" "}${apartment?.depositAmount ?? 0}
+        </span>.
+      </DialogDescription>
+    </DialogHeader>
 
-          <DialogFooter className="pt-4">
-            <Button variant="ghost" onClick={() => setShowCancelModal(false)}>
-              Back
-            </Button>
-            <Button
-              onClick={() => {
-                console.log("🛑 Cancelling booking:", booking._id);
-                console.log("📝 Message:", cancelMessage);
-                onCancel(booking._id, cancelMessage);
-                setShowCancelModal(false);
-                setCancelMessage("");
-              }}
-            >
-              Confirm Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+    <textarea
+      className="w-full rounded-md border border-input p-2 text-sm mt-4"
+      rows={4}
+      placeholder="Optional: Explain why you're cancelling."
+      value={cancelMessage}
+      onChange={(e) => setCancelMessage(e.target.value)}
+    />
+
+    <DialogFooter className="pt-4">
+      <Button variant="ghost" onClick={() => setShowApprovedCancelModal(false)}>
+        Back
+      </Button>
+      <Button
+        onClick={() => {
+          console.log("🛑 Cancelling approved booking:", booking._id);
+          onCancel(booking._id, cancelMessage);
+          setShowApprovedCancelModal(false);
+          setCancelMessage("");
+        }}
+      >
+        Confirm Cancel
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 
       {/* Dialog: Show Student's Cancel Message */}
       <Dialog
